@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import ipaddress
 import socket
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from urllib.parse import urljoin, urlparse
 
 BLOCKED_HOSTNAMES = {
@@ -33,9 +34,25 @@ BLOCKED_HOSTNAMES = {
 ALLOWED_SCHEMES = {"http", "https"}
 MAX_REDIRECTS = 5
 
+# `socket.getaddrinfo` n'accepte pas de timeout : face à un TLD dont les serveurs
+# de noms ne répondent pas, l'appel peut bloquer plusieurs dizaines de secondes.
+# On l'exécute donc dans un thread borné par ce délai.
+DNS_TIMEOUT_SECONDS = 5.0
+
+_DNS_EXECUTOR = ThreadPoolExecutor(max_workers=8, thread_name_prefix="dns-resolve")
+
 
 class UnsafeTargetError(ValueError):
     """Levée quand une cible ne peut pas être auditée en sécurité (privée, interne, invalide)."""
+
+
+class UnresolvableTargetError(UnsafeTargetError):
+    """Levée quand le nom d'hôte est introuvable ou que le DNS ne répond pas.
+
+    Distincte de `UnsafeTargetError` : une cible irrésoluble n'est pas dangereuse,
+    elle est seulement inexploitable. Les appelants peuvent donc la traiter comme
+    un avertissement plutôt que comme un refus de sécurité.
+    """
 
 
 def _is_unsafe_ip(ip_str: str) -> bool:
@@ -53,6 +70,23 @@ def _is_unsafe_ip(ip_str: str) -> bool:
     )
 
 
+def _resolve(host: str) -> list[tuple]:
+    """Résout `host` sans jamais bloquer au-delà de DNS_TIMEOUT_SECONDS."""
+    future = _DNS_EXECUTOR.submit(socket.getaddrinfo, host, None)
+    try:
+        return future.result(timeout=DNS_TIMEOUT_SECONDS)
+    except FuturesTimeoutError as exc:
+        # Le thread reste en cours mais se terminera seul : on ne bloque plus l'appelant.
+        raise UnresolvableTargetError(
+            f"Le domaine {host} ne répond pas dans le DNS (délai dépassé). "
+            "Vérifiez l'orthographe du domaine ou réessayez plus tard."
+        ) from exc
+    except socket.gaierror as exc:
+        raise UnresolvableTargetError(
+            f"Le domaine {host} est introuvable dans le DNS. Vérifiez l'orthographe du domaine."
+        ) from exc
+
+
 def assert_public_host(hostname: str) -> None:
     """Résout `hostname` et lève UnsafeTargetError si une IP obtenue n'est pas publique."""
     host = (hostname or "").strip().lower().rstrip(".")
@@ -61,12 +95,7 @@ def assert_public_host(hostname: str) -> None:
     if host in BLOCKED_HOSTNAMES:
         raise UnsafeTargetError(f"Cible non autorisée : {host}")
 
-    try:
-        infos = socket.getaddrinfo(host, None)
-    except socket.gaierror as exc:
-        raise UnsafeTargetError(f"Impossible de résoudre {host} : {exc}") from exc
-
-    for info in infos:
+    for info in _resolve(host):
         ip_str = info[4][0]
         if _is_unsafe_ip(ip_str):
             raise UnsafeTargetError(

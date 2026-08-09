@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { KeyRound, Save, UserCog } from "lucide-react";
 import AppShell from "../components/AppShell";
+import ConfirmDialog from "../components/ConfirmDialog";
 import PageHeader from "../components/PageHeader";
 import PasswordInput from "../components/PasswordInput";
 import { api } from "../api/client";
@@ -21,6 +22,7 @@ export default function Profile() {
   const [pwdMsg, setPwdMsg] = useState(null);
   const [pwdErr, setPwdErr] = useState("");
   const [savingPwd, setSavingPwd] = useState(false);
+  const [pwdConfirmOpen, setPwdConfirmOpen] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -51,7 +53,7 @@ export default function Profile() {
     }
   }
 
-  async function handlePasswordSubmit(event) {
+  function handlePasswordSubmit(event) {
     event.preventDefault();
     setPwdErr("");
     setPwdMsg(null);
@@ -63,7 +65,13 @@ export default function Profile() {
       setPwdErr("Le nouveau mot de passe doit contenir au moins 8 caractères.");
       return;
     }
+    setPwdConfirmOpen(true);
+  }
+
+  async function confirmPasswordChange() {
     setSavingPwd(true);
+    setPwdErr("");
+    setPwdMsg(null);
     try {
       await api("/auth/change-password", {
         method: "POST",
@@ -76,8 +84,10 @@ export default function Profile() {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
+      setPwdConfirmOpen(false);
     } catch (err) {
       setPwdErr(err.message);
+      setPwdConfirmOpen(false);
     } finally {
       setSavingPwd(false);
     }
@@ -184,6 +194,20 @@ export default function Profile() {
           </button>
         </form>
       </div>
+
+      <ConfirmDialog
+        open={pwdConfirmOpen}
+        tone="primary"
+        title="Confirmer le nouveau mot de passe ?"
+        description="Votre mot de passe actuel sera remplacé. Vous resterez connecté sur cet appareil."
+        details="Utilisez un mot de passe unique, d'au moins 8 caractères, que vous n'employez nulle part ailleurs."
+        confirmLabel="Confirmer la modification"
+        cancelLabel="Annuler"
+        loadingLabel="Modification..."
+        loading={savingPwd}
+        onConfirm={confirmPasswordChange}
+        onCancel={() => !savingPwd && setPwdConfirmOpen(false)}
+      />
     </AppShell>
   );
 }

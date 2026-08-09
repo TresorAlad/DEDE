@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { LayoutDashboard, LogOut, PlusCircle, ScrollText, Server, UserCog } from "lucide-react";
+import ConfirmDialog from "./ConfirmDialog";
 import { clearToken } from "../api/client";
 import { clearAuthUserCache, useAuthUser } from "../hooks/useAuthUser";
 
@@ -14,6 +16,7 @@ const links = [
 export default function Sidebar() {
   const location = useLocation();
   const { user } = useAuthUser();
+  const [logoutOpen, setLogoutOpen] = useState(false);
 
   function isActive(path) {
     if (path === "/reports") {
@@ -28,6 +31,12 @@ export default function Sidebar() {
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase())
     .join("");
+
+  function confirmLogout() {
+    clearAuthUserCache();
+    clearToken();
+    window.location.href = "/login";
+  }
 
   return (
     <aside className="fixed top-0 left-0 z-40 flex h-screen w-64 flex-col overflow-hidden bg-primary px-5 py-6 text-white">
@@ -73,17 +82,24 @@ export default function Sidebar() {
         </Link>
         <button
           type="button"
-          onClick={() => {
-            clearAuthUserCache();
-            clearToken();
-            window.location.href = "/login";
-          }}
+          onClick={() => setLogoutOpen(true)}
           className="mt-4 flex w-full items-center gap-2 rounded-full px-3 py-2 text-left text-sm text-white/80 hover:bg-white/10 hover:text-white"
         >
           <LogOut size={16} />
           Se déconnecter
         </button>
       </div>
+
+      <ConfirmDialog
+        open={logoutOpen}
+        tone="primary"
+        title="Se déconnecter ?"
+        description="Vous quitterez votre session ƉEƉE. Vous pourrez vous reconnecter à tout moment avec vos identifiants."
+        confirmLabel="Se déconnecter"
+        cancelLabel="Rester connecté"
+        onConfirm={confirmLogout}
+        onCancel={() => setLogoutOpen(false)}
+      />
     </aside>
   );
 }

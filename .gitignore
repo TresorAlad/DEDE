@@ -5,6 +5,11 @@
 !.env.example
 !**/.env.example
 
+# Clés SSH / certificats
+*.pem
+*.key
+DEDE_key.pem
+
 # Python
 __pycache__/
 *.py[cod]

@@ -75,6 +75,34 @@ class PlatformCreate(BaseModel):
         return cleaned
 
 
+class PlatformUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=2, max_length=255)
+    domain: str | None = Field(default=None, min_length=3, max_length=255)
+    url: str | None = Field(default=None, min_length=3, max_length=512)
+
+    @field_validator("domain")
+    @classmethod
+    def validate_domain(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        import re
+
+        cleaned = value.strip().lower()
+        if not re.match(DOMAIN_RE, cleaned):
+            raise ValueError("Domaine invalide. Exemple attendu : exemple.com")
+        return cleaned
+
+    @field_validator("url")
+    @classmethod
+    def validate_url(cls, value: str | None) -> str | None:
+        if value is None:
+            return value
+        cleaned = value.strip()
+        if not cleaned.lower().startswith(("http://", "https://")):
+            raise ValueError("L'URL doit commencer par http:// ou https://")
+        return cleaned
+
+
 class PlatformOut(BaseModel):
     id: int
     name: str
