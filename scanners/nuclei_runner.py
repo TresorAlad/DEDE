@@ -64,10 +64,11 @@ def _parse_nuclei_output(stdout: str) -> list[dict[str, Any]]:
 
 def run_nuclei(url: str, timeout: int = 420) -> list[dict[str, Any]]:
     """
-    Lance Nuclei en mode intrusif :
-    - Interactsh (OOB) activé
-    - templates DAST / fuzz (SQLi, XSS génériques, etc.)
-    - tags de vulnérabilités élargis
+    Lance Nuclei sur l'URL cible avec un jeu de tags de vulnérabilités élargi.
+
+    Note Nuclei v3 : le flag `-dast` ne sélectionne que les templates DAST/fuzz
+    et ignore la majorité des templates CVE / misconfig. On ne l'active donc
+    pas ici, afin de garder une couverture utile pour l'audit MVP.
 
     Toujours limité aux domaines dont la propriété a été vérifiée en amont.
     """
@@ -88,24 +89,22 @@ def run_nuclei(url: str, timeout: int = 420) -> list[dict[str, Any]]:
         url,
         "-jsonl",
         "-silent",
+        "-nc",
         "-severity",
-        "critical,high,medium,low",
+        "critical,high,medium,low,info",
         "-tags",
         NUCLEI_TAGS,
         "-exclude-tags",
         "dos",
-        "-dast",
-        "-fuzz-aggression",
-        "medium",
         "-disable-update-check",
         "-timeout",
-        "15",
+        "10",
         "-retries",
         "1",
         "-rate-limit",
-        "150",
+        "100",
         "-concurrency",
-        "50",
+        "25",
     ]
 
     try:
