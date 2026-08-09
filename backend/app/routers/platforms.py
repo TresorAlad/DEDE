@@ -6,6 +6,8 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from urllib.parse import urljoin, urlparse
+
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.concurrency import run_in_threadpool
@@ -27,6 +29,41 @@ router = APIRouter(prefix="/platforms", tags=["platforms"])
 settings = get_settings()
 
 VERIFICATION_PATH = "/.well-known/dede-verification.txt"
+# Beaucoup d'hébergeurs (Vercel, Netlify) redirigent l'apex vers www, ou http
+# vers https. On suit ces redirections mais en revalidant l'hôte à chaque saut
+# pour ne pas rouvrir de faille SSRF via une redirection vers une IP interne.
+MAX_VERIFICATION_REDIRECTS = 5
+
+
+async def _fetch_verification_body(start_url: str) -> str | None:
+    """Récupère le corps du fichier de preuve en suivant les redirections sûres."""
+    current_url = start_url
+    try:
+        async with httpx.AsyncClient(timeout=10, follow_redirects=False) as client:
+            for _ in range(MAX_VERIFICATION_REDIRECTS):
+                parsed = urlparse(current_url)
+                if parsed.scheme not in ("http", "https"):
+                    return None
+                try:
+                    await run_in_threadpool(assert_public_host, parsed.hostname or "")
+                except UnsafeTargetError:
+                    return None
+
+                response = await client.get(current_url)
+
+                if response.is_redirect:
+                    location = response.headers.get("Location")
+                    if not location:
+                        return None
+                    current_url = urljoin(current_url, location)
+                    continue
+
+                if response.status_code < 400:
+                    return response.text
+                return None
+    except httpx.HTTPError:
+        return None
+    return None
 
 
 @router.get("", response_model=list[PlatformOut])
@@ -181,25 +218,13 @@ async def verify_platform(
     except UnsafeTargetError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    check_url = f"https://{platform.domain}{VERIFICATION_PATH}"
     body = None
-    try:
-        async with httpx.AsyncClient(timeout=10, follow_redirects=False) as client:
-            response = await client.get(check_url)
-            if response.status_code < 400:
-                body = response.text
-    except httpx.HTTPError:
-        body = None
-
-    if body is None:
-        # Retente en HTTP simple si le HTTPS n'est pas disponible sur le domaine.
-        try:
-            async with httpx.AsyncClient(timeout=10, follow_redirects=False) as client:
-                response = await client.get(f"http://{platform.domain}{VERIFICATION_PATH}")
-                if response.status_code < 400:
-                    body = response.text
-        except httpx.HTTPError:
-            body = None
+    for scheme in ("https", "http"):
+        body = await _fetch_verification_body(
+            f"{scheme}://{platform.domain}{VERIFICATION_PATH}"
+        )
+        if body is not None:
+            break
 
     if body is None or platform.verification_token not in body:
         raise HTTPException(
