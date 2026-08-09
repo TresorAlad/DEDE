@@ -11,8 +11,13 @@ class Settings(BaseSettings):
     mistral_api_key: str = ""
     jwt_secret: str = "dev-secret-change-me"
     jwt_algorithm: str = "HS256"
-    access_token_expire_minutes: int = 1440
+    # Session utilisateur : expiration après N minutes d'inactivité.
+    # Le middleware prolonge le jeton à chaque requête authentifiée (fenêtre glissante).
+    access_token_expire_minutes: int = 15
     cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+    # Bascule de démo uniquement : permet de valider une plateforme sans preuve
+    # de propriété réelle. Désactivée par défaut, à activer explicitement en local.
+    allow_dev_auto_verify: bool = False
 
     @property
     def cors_origin_list(self) -> list[str]:

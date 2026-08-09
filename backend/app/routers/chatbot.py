@@ -1,12 +1,19 @@
+import sys
+from pathlib import Path
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import joinedload
 
-from app.auth import get_current_user
+from app.auth import get_current_user_id
 from app.db import get_db
-from app.models import Audit, Platform, User
+from app.models import Audit, Platform
 from app.schemas import ChatRequest, ChatResponse
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 router = APIRouter(prefix="/chatbot", tags=["chatbot"])
 
@@ -16,15 +23,15 @@ async def ask_chatbot(
     audit_id: int,
     payload: ChatRequest,
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user_id: int = Depends(get_current_user_id),
 ):
     result = await db.execute(
         select(Audit)
         .join(Platform)
-        .options(selectinload(Audit.scan_result), selectinload(Audit.score))
-        .where(Audit.id == audit_id, Platform.owner_id == user.id)
+        .options(joinedload(Audit.scan_result), joinedload(Audit.score))
+        .where(Audit.id == audit_id, Platform.owner_id == user_id)
     )
-    audit = result.scalar_one_or_none()
+    audit = result.unique().scalar_one_or_none()
     if audit is None:
         raise HTTPException(status_code=404, detail="Audit introuvable")
     if audit.status != "completed" or audit.scan_result is None:
@@ -40,7 +47,14 @@ async def ask_chatbot(
         "raw": audit.scan_result.raw_json or {},
     }
 
-    from ai.chatbot import ask_about_report
+    try:
+        from ai.chatbot import ask_about_report
 
-    answer = ask_about_report(payload.question, report_context)
+        answer = ask_about_report(payload.question, report_context)
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(
+            status_code=503,
+            detail=f"Assistant indisponible pour le moment : {exc}",
+        ) from exc
+
     return ChatResponse(answer=answer)

@@ -1,0 +1,41 @@
+# Sources Amass prioritaires pour ƉEƉE (clés gratuites).
+# Ne pas y mettre de vraies clés : utilisez scanners/amass/.env
+# (le runner génère datasources.yaml automatiquement).
+
+global_options:
+  minimum_ttl: 1440
+
+datasources:
+  - name: VirusTotal
+    ttl: 10080
+    creds:
+      account:
+        apikey: REMAPLACER_PAR_VOTRE_CLE
+
+  - name: AlienVault
+    creds:
+      account:
+        apikey: REMAPLACER_PAR_VOTRE_CLE
+
+  - name: URLScan
+    creds:
+      account:
+        apikey: REMAPLACER_PAR_VOTRE_CLE
+
+  - name: GitHub
+    ttl: 4320
+    creds:
+      accountname:
+        apikey: REMAPLACER_PAR_VOTRE_CLE
+
+  - name: SecurityTrails
+    ttl: 1440
+    creds:
+      account:
+        apikey: REMAPLACER_PAR_VOTRE_CLE
+
+  - name: Shodan
+    ttl: 10080
+    creds:
+      account:
+        apikey: REMAPLACER_PAR_VOTRE_CLE

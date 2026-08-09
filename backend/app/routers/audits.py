@@ -1,11 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import joinedload
 
-from app.auth import get_current_user
-from app.db import get_db
-from app.models import Audit, Platform, User
+from app.auth import get_current_user_id
+from app.db import get_db, get_db_ro
+from app.models import Audit, Platform
+from app.progress import initial_progress
 from app.queue import enqueue_audit
 from app.schemas import AuditOut
 
@@ -14,17 +15,17 @@ router = APIRouter(prefix="/audits", tags=["audits"])
 
 @router.get("", response_model=list[AuditOut])
 async def list_audits(
-    db: AsyncSession = Depends(get_db),
-    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db_ro),
+    user_id: int = Depends(get_current_user_id),
 ):
     result = await db.execute(
         select(Audit)
         .join(Platform)
-        .options(selectinload(Audit.score))
-        .where(Platform.owner_id == user.id)
+        .options(joinedload(Audit.score))
+        .where(Platform.owner_id == user_id)
         .order_by(Audit.id.desc())
     )
-    audits = result.scalars().all()
+    audits = result.unique().scalars().all()
     out = []
     for audit in audits:
         out.append(
@@ -44,10 +45,10 @@ async def list_audits(
 async def start_audit(
     platform_id: int,
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(get_current_user),
+    user_id: int = Depends(get_current_user_id),
 ):
     result = await db.execute(
-        select(Platform).where(Platform.id == platform_id, Platform.owner_id == user.id)
+        select(Platform).where(Platform.id == platform_id, Platform.owner_id == user_id)
     )
     platform = result.scalar_one_or_none()
     if platform is None:
@@ -58,7 +59,23 @@ async def start_audit(
             detail="Vérification de propriété requise avant de lancer un audit",
         )
 
-    audit = Audit(platform_id=platform.id, status="queued")
+    existing = await db.execute(
+        select(Audit).where(
+            Audit.platform_id == platform.id,
+            Audit.status.in_(["queued", "running"]),
+        )
+    )
+    if existing.scalar_one_or_none() is not None:
+        raise HTTPException(
+            status_code=409,
+            detail="Un audit est déjà en cours pour cette plateforme.",
+        )
+
+    audit = Audit(
+        platform_id=platform.id,
+        status="queued",
+        progress_json=initial_progress(),
+    )
     db.add(audit)
     await db.commit()
     await db.refresh(audit)

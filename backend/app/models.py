@@ -12,8 +12,10 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     organization_name: Mapped[str] = mapped_column(String(255))
+    full_name: Mapped[str] = mapped_column(String(255))
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     hashed_password: Mapped[str] = mapped_column(String(255))
+    terms_accepted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     platforms: Mapped[list["Platform"]] = relationship(back_populates="owner")
@@ -42,6 +44,9 @@ class Audit(Base):
     platform_id: Mapped[int] = mapped_column(ForeignKey("platforms.id"), index=True)
     status: Mapped[str] = mapped_column(String(50), default="queued")
     error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Suivi étape par étape (bande de suivi UI) : liste de dicts
+    # {key, label, status, at, detail}.
+    progress_json: Mapped[dict | list | None] = mapped_column(JSONB, nullable=True)
     started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
