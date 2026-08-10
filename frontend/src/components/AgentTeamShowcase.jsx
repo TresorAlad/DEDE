@@ -87,7 +87,7 @@ export default function AgentTeamShowcase() {
       <div className="flex items-center justify-between border-b border-outline-variant/30 bg-surface-container-low px-md py-sm">
         <div className="flex items-center gap-base font-label-caps text-label-caps uppercase text-primary">
           <Icon name="neurology" size={16} />
-          Mission control · équipe dede-agent
+          Mission control · équipe d'agents IA
         </div>
         <div className="flex gap-base">
           <span className="h-2 w-2 rounded-pill bg-error" />
@@ -198,7 +198,7 @@ export default function AgentTeamShowcase() {
         >
           {logs.length === 0 && (
             <p className="text-on-surface-variant/60">
-              $ dede-agent --target exemple.com
+              $ audit --cible exemple.com
               <span className="ml-1 inline-block h-3 w-2 translate-y-0.5 animate-pulse bg-primary-container" />
             </p>
           )}

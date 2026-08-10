@@ -23,7 +23,7 @@ export default function Confidentialite() {
           <h2 className="pt-sm font-headline-sm text-[18px] leading-6 text-primary">3. Sous-traitants et services tiers</h2>
           <p>
             Certaines données brutes issues des audits sont transmises à un fournisseur tiers
-            d'intelligence artificielle (Mistral AI) afin de générer une synthèse et des recommandations
+            d'intelligence artificielle afin de générer une synthèse et des recommandations
             en langage naturel. Les données de compte et les résultats d'audit sont stockés dans une base
             de données PostgreSQL hébergée par un fournisseur cloud tiers. Aucune donnée n'est vendue à
             des tiers à des fins commerciales.

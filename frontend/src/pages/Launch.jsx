@@ -21,14 +21,14 @@ const ENGINES = [
   {
     value: "agents",
     label: "Agents IA",
-    caption: "Équipe d'agents dede-agent orchestrée : graphe d'exécution, suivi en direct, analyse IA.",
+    caption: "Équipe d'agents IA orchestrée : graphe d'exécution, suivi en direct, analyse assistée.",
     icon: "neurology",
     features: ["Orchestration visible en direct", "Analyse et priorisation IA", "Journal de chaque agent"],
   },
   {
     value: "scanners",
     label: "Scanners classiques",
-    caption: "Modules éprouvés (Amass · Nuclei · SSL · en-têtes) exécutés séquentiellement.",
+    caption: "Pipeline d'audit déterministe : surface d'attaque, vulnérabilités, SSL/TLS et en-têtes HTTP.",
     icon: "radar",
     features: ["Exécution déterministe", "Rapide sur cibles stables", "Rapport détaillé"],
   },
@@ -439,7 +439,7 @@ export default function Launch() {
         <div className="col-span-12">
           <StepBody
             title="Preuve de propriété"
-            subtitle="Avant tout scan, dede-agent doit confirmer que vous contrôlez ce domaine."
+            subtitle="Avant tout scan, ƉEƉE doit confirmer que vous contrôlez ce domaine."
             footer={
               verified ? (
                 <div className="flex flex-wrap items-center justify-between gap-sm">

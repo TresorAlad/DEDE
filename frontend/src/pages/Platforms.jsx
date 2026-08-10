@@ -55,13 +55,13 @@ export default function Platforms() {
     {
       value: "scanners",
       label: "Scanners classiques",
-      caption: "Amass · Nuclei · SSL · en-têtes",
+      caption: "Surface, vulnérabilités, SSL, en-têtes",
       icon: "radar",
     },
     {
       value: "agents",
       label: "Agents IA",
-      caption: "Équipe d'agents dede-agent",
+      caption: "Équipe d'agents IA",
       icon: "neurology",
     },
   ];
