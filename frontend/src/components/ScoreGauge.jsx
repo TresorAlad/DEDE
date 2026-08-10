@@ -1,70 +1,95 @@
-import { PolarAngleAxis, RadialBar, RadialBarChart, ResponsiveContainer } from "recharts";
+import Icon from "./Icon";
 
-function scoreColor(score, risk) {
-  if (risk === "Indéterminé") return "#94A3B8";
-  if (score >= 90) return "#2ECC71";
-  if (score >= 75) return "#F59E0B";
-  if (score >= 50) return "#FB923C";
-  if (score > 0) return "#E57373";
-  return "#94A3B8";
+const CIRCUMFERENCE = 282.7;
+
+function scoreColor(score, undetermined) {
+  if (undetermined) return "#85948e";
+  if (score >= 75) return "#5ffbd6";
+  if (score >= 50) return "#f59e0b";
+  return "#f43f5e";
 }
 
-export default function ScoreGauge({ score = 0, risk = "Inconnu", title = "Score de sécurité" }) {
+function statusLabel(score, undetermined) {
+  if (undetermined) return "Analyse incomplète";
+  if (score >= 75) return "Système optimal";
+  if (score >= 50) return "Surveillance requise";
+  return "Action immédiate";
+}
+
+export default function ScoreGauge({
+  score = 0,
+  risk = "Inconnu",
+  title = "Score de sécurité global",
+  updatedAt,
+}) {
   const value = Math.max(0, Math.min(100, Number(score) || 0));
   const undetermined = risk === "Indéterminé";
-  const color = scoreColor(value, risk);
-  // On affiche 0 pour l'arc quand le score est indéterminé (arc vide + "?").
-  const arcValue = undetermined ? 0 : value;
-  const data = [{ name: "score", value: arcValue, fill: color }];
+  const color = scoreColor(value, undetermined);
+  const offset = undetermined ? CIRCUMFERENCE : CIRCUMFERENCE - (CIRCUMFERENCE * value) / 100;
+  const status = statusLabel(value, undetermined);
 
   return (
-    <div className="rounded-card bg-white p-6 shadow-card">
-      <p className="text-sm font-semibold text-primary">{title}</p>
-      <div className="relative mx-auto mt-2 h-52 w-52">
-        <ResponsiveContainer width="100%" height="100%">
-          <RadialBarChart
-            cx="50%"
-            cy="50%"
-            innerRadius="70%"
-            outerRadius="100%"
-            startAngle={210}
-            endAngle={-30}
-            data={data}
+    <div className="panel h-full">
+      <div className="panel-veil" />
+      <div className="relative z-10 flex h-full flex-col items-center p-md">
+        <div className="mb-md flex w-full items-center justify-between border-b border-outline-variant/30 pb-xs">
+          <h2 className="panel-title">{title}</h2>
+          <Icon name="speed" className="text-on-surface-variant" />
+        </div>
+
+        <div className="relative mt-md flex h-48 w-48 items-center justify-center">
+          <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 100 100">
+            <circle
+              className="text-outline-variant opacity-10"
+              cx="50"
+              cy="50"
+              r="45"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            />
+          </svg>
+          <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 100 100">
+            <circle
+              cx="50"
+              cy="50"
+              r="45"
+              fill="none"
+              stroke={color}
+              strokeWidth="2"
+              strokeDasharray={CIRCUMFERENCE}
+              strokeDashoffset={offset}
+              className="transition-all duration-1000 ease-out"
+              style={{ filter: `drop-shadow(0 0 8px ${color}4d)` }}
+            />
+          </svg>
+          <div className="flex flex-col items-center text-center">
+            <span className="font-display-lg text-display-lg tracking-tighter text-primary">
+              {undetermined ? "?" : Math.round(value)}
+            </span>
+            <span className="mt-1 font-label-caps text-label-caps uppercase text-on-surface-variant">
+              /100
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-auto flex w-full flex-col items-center gap-sm pt-md">
+          <div
+            className="rounded border px-sm py-xs font-label-caps text-label-caps uppercase tracking-widest"
+            style={{ color, borderColor: `${color}33`, backgroundColor: `${color}1a` }}
           >
-            <PolarAngleAxis
-              type="number"
-              domain={[0, 100]}
-              angleAxisId={0}
-              tick={false}
-            />
-            <RadialBar
-              background={{ fill: "#E2E8F0" }}
-              dataKey="value"
-              cornerRadius={12}
-              angleAxisId={0}
-              clockwise
-            />
-          </RadialBarChart>
-        </ResponsiveContainer>
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          {undetermined ? (
-            <span className="text-3xl font-bold text-slate-400">?</span>
-          ) : (
-            <>
-              <span className="text-4xl font-bold text-primary">{Math.round(value)}</span>
-              <span className="text-xs uppercase tracking-wide text-slate-400">/ 100</span>
-            </>
+            {status}
+          </div>
+          <p className="text-center font-data-mono text-[12px] text-on-surface-variant">
+            Niveau de risque : {risk || "Inconnu"}
+          </p>
+          {updatedAt && (
+            <p className="text-center font-data-mono text-[12px] text-on-surface-variant">
+              Mis à jour : {updatedAt}
+            </p>
           )}
         </div>
       </div>
-      <p className="mt-2 text-center text-sm text-slate-600">
-        Niveau de risque : <span className="font-semibold text-primary">{risk || "Inconnu"}</span>
-      </p>
-      {undetermined && (
-        <p className="mt-1 text-center text-xs text-slate-400">
-          Analyse insuffisante pour attribuer un score fiable.
-        </p>
-      )}
     </div>
   );
 }

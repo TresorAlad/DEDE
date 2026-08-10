@@ -1,11 +1,27 @@
 import { useEffect, useState } from "react";
-import { KeyRound, Save, UserCog } from "lucide-react";
 import AppShell from "../components/AppShell";
 import ConfirmDialog from "../components/ConfirmDialog";
+import Icon from "../components/Icon";
 import PageHeader from "../components/PageHeader";
 import PasswordInput from "../components/PasswordInput";
 import { api } from "../api/client";
 import { setAuthUser, useAuthUser } from "../hooks/useAuthUser";
+
+function Feedback({ error, message }) {
+  if (!error && !message) return null;
+  return (
+    <p
+      className={`mt-sm flex items-center gap-base rounded border px-sm py-base font-data-mono text-[12px] ${
+        error
+          ? "border-critical/30 bg-critical/10 text-critical"
+          : "border-success/30 bg-success/10 text-success"
+      }`}
+    >
+      <Icon name={error ? "error" : "check_circle"} size={16} />
+      {error || message}
+    </p>
+  );
+}
 
 export default function Profile() {
   const { user } = useAuthUser();
@@ -96,103 +112,141 @@ export default function Profile() {
   return (
     <AppShell>
       <PageHeader
-        title="Mon profil"
-        subtitle="Gérez vos informations personnelles et votre mot de passe."
+        title="Réglages du compte"
+        subtitle="Gérez votre identité opérateur et vos accès."
       />
 
-      <div className="grid gap-6 lg:grid-cols-2">
-        <form onSubmit={handleProfileSubmit} className="card">
-          <div className="flex items-center gap-2">
-            <UserCog size={18} className="text-accent" />
-            <h2 className="text-lg font-semibold text-primary">Informations</h2>
-          </div>
+      <div className="col-span-12 lg:col-span-6">
+        <div className="panel h-full">
+          <div className="panel-veil" />
+          <form onSubmit={handleProfileSubmit} className="relative z-10 flex h-full flex-col p-md">
+            <div className="mb-md flex items-center justify-between border-b border-outline-variant/30 pb-xs">
+              <h2 className="panel-title">Identité opérateur</h2>
+              <Icon name="badge" className="text-on-surface-variant" />
+            </div>
 
-          <label className="mt-4 block text-sm font-medium text-slate-600">
-            Nom et prénom
-            <input
-              className="input-field"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              minLength={2}
-              required
-            />
-          </label>
+            <div className="space-y-md">
+              <div>
+                <label className="field-label" htmlFor="fullname">
+                  Nom et prénom
+                </label>
+                <div className="relative">
+                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-sm">
+                    <Icon name="person" size={18} className="text-outline" />
+                  </span>
+                  <input
+                    id="fullname"
+                    className="input-field pl-xl"
+                    value={fullName}
+                    onChange={(e) => setFullName(e.target.value)}
+                    minLength={2}
+                    required
+                  />
+                </div>
+              </div>
 
-          <label className="mt-4 block text-sm font-medium text-slate-600">
-            Organisation
-            <input
-              className="input-field"
-              value={organization}
-              onChange={(e) => setOrganization(e.target.value)}
-              minLength={2}
-              required
-            />
-          </label>
+              <div>
+                <label className="field-label" htmlFor="organization">
+                  Organisation
+                </label>
+                <div className="relative">
+                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-sm">
+                    <Icon name="corporate_fare" size={18} className="text-outline" />
+                  </span>
+                  <input
+                    id="organization"
+                    className="input-field pl-xl"
+                    value={organization}
+                    onChange={(e) => setOrganization(e.target.value)}
+                    minLength={2}
+                    required
+                  />
+                </div>
+              </div>
 
-          <label className="mt-4 block text-sm font-medium text-slate-600">
-            Adresse e-mail
-            <input
-              className="input-field bg-slate-50 text-slate-400"
-              value={user?.email || ""}
-              disabled
-            />
-            <span className="mt-1 block text-xs text-slate-400">
-              L'adresse e-mail ne peut pas être modifiée.
-            </span>
-          </label>
+              <div>
+                <label className="field-label" htmlFor="email">
+                  Adresse e-mail
+                </label>
+                <div className="relative">
+                  <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-sm">
+                    <Icon name="mail" size={18} className="text-outline" />
+                  </span>
+                  <input
+                    id="email"
+                    className="input-field cursor-not-allowed pl-xl opacity-60"
+                    value={user?.email || ""}
+                    disabled
+                  />
+                </div>
+                <span className="mt-base block font-data-mono text-[12px] text-on-surface-variant">
+                  L'adresse e-mail ne peut pas être modifiée.
+                </span>
+              </div>
+            </div>
 
-          {profileErr && <p className="mt-3 text-sm text-danger">{profileErr}</p>}
-          {profileMsg && <p className="mt-3 text-sm text-emerald-600">{profileMsg}</p>}
+            <Feedback error={profileErr} message={profileMsg} />
 
-          <button type="submit" disabled={savingProfile} className="btn-accent mt-5">
-            <Save size={16} />
-            {savingProfile ? "Enregistrement..." : "Enregistrer"}
-          </button>
-        </form>
+            <div className="mt-auto pt-md">
+              <button type="submit" disabled={savingProfile} className="btn-primary">
+                <Icon name="save" size={16} />
+                {savingProfile ? "Enregistrement..." : "Enregistrer"}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
 
-        <form onSubmit={handlePasswordSubmit} className="card">
-          <div className="flex items-center gap-2">
-            <KeyRound size={18} className="text-accent" />
-            <h2 className="text-lg font-semibold text-primary">Mot de passe</h2>
-          </div>
+      <div className="col-span-12 lg:col-span-6">
+        <div className="panel h-full">
+          <div className="panel-veil" />
+          <form onSubmit={handlePasswordSubmit} className="relative z-10 flex h-full flex-col p-md">
+            <div className="mb-md flex items-center justify-between border-b border-outline-variant/30 pb-xs">
+              <h2 className="panel-title">Clé d'accès</h2>
+              <Icon name="key" className="text-on-surface-variant" />
+            </div>
 
-          <label className="mt-4 block text-sm font-medium text-slate-600">
-            Mot de passe actuel
-            <PasswordInput
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-              required
-            />
-          </label>
+            <div className="space-y-md">
+              <div>
+                <label className="field-label">Mot de passe actuel</label>
+                <PasswordInput
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  required
+                />
+              </div>
 
-          <label className="mt-4 block text-sm font-medium text-slate-600">
-            Nouveau mot de passe
-            <PasswordInput
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              minLength={8}
-              required
-            />
-          </label>
+              <div>
+                <label className="field-label">Nouveau mot de passe</label>
+                <PasswordInput
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  minLength={8}
+                  required
+                />
+              </div>
 
-          <label className="mt-4 block text-sm font-medium text-slate-600">
-            Confirmer le nouveau mot de passe
-            <PasswordInput
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              minLength={8}
-              required
-            />
-          </label>
+              <div>
+                <label className="field-label">Confirmation du nouveau mot de passe</label>
+                <PasswordInput
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  minLength={8}
+                  required
+                />
+              </div>
+            </div>
 
-          {pwdErr && <p className="mt-3 text-sm text-danger">{pwdErr}</p>}
-          {pwdMsg && <p className="mt-3 text-sm text-emerald-600">{pwdMsg}</p>}
+            <Feedback error={pwdErr} message={pwdMsg} />
 
-          <button type="submit" disabled={savingPwd} className="btn-accent mt-5">
-            <Save size={16} />
-            {savingPwd ? "Modification..." : "Modifier le mot de passe"}
-          </button>
-        </form>
+            <div className="mt-auto pt-md">
+              <button type="submit" disabled={savingPwd} className="btn-primary">
+                <Icon name="lock_reset" size={16} />
+                {savingPwd ? "Modification..." : "Modifier le mot de passe"}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
 
       <ConfirmDialog

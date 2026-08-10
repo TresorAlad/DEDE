@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 * {
@@ -18,11 +18,20 @@ body,
 
 body {
   margin: 0;
-  font-family: Inter, "Segoe UI", system-ui, sans-serif;
-  color: #1e293b;
-  background: #f4f6f8;
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  color: #dde4e0;
+  background-color: #0e1512;
+  background-image: radial-gradient(circle at 50% 0%, rgba(56, 222, 187, 0.05) 0%, transparent 60%);
+  background-repeat: no-repeat;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: #5ffbd6;
+  color: #00725e;
 }
 
 button,
@@ -31,16 +40,12 @@ input,
 textarea,
 select {
   transition:
-    background-color 160ms ease,
-    color 160ms ease,
-    border-color 160ms ease,
-    box-shadow 160ms ease,
-    transform 160ms ease,
-    opacity 160ms ease;
-}
-
-button:active:not(:disabled) {
-  transform: translateY(1px);
+    background-color 200ms ease,
+    color 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    transform 200ms ease,
+    opacity 200ms ease;
 }
 
 ::-webkit-scrollbar {
@@ -48,13 +53,17 @@ button:active:not(:disabled) {
   height: 8px;
 }
 
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 999px;
+  background: #3c4a45;
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #85948e;
 }
 
 @keyframes fade-in {
@@ -88,31 +97,106 @@ button:active:not(:disabled) {
 }
 
 @layer components {
-  .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50;
-    box-shadow: 0 8px 24px rgba(27, 58, 92, 0.08);
+  /* Trame technique de la page d'accueil. */
+  .tech-grid {
+    background-size: 40px 40px;
+    background-image:
+      linear-gradient(to right, rgba(95, 251, 214, 0.05) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(95, 251, 214, 0.05) 1px, transparent 1px);
   }
 
-  .btn-accent {
-    @apply inline-flex items-center justify-center gap-2 rounded-full bg-accent px-5 py-2.5 text-sm font-medium text-white hover:bg-accent/90 disabled:opacity-50;
-    box-shadow: 0 8px 24px rgba(27, 58, 92, 0.08);
+  /* Grille ambiante des ecrans d'authentification. */
+  .ambient-grid {
+    background-image:
+      linear-gradient(to right, #3c4a45 1px, transparent 1px),
+      linear-gradient(to bottom, #3c4a45 1px, transparent 1px);
+    background-size: 4rem 4rem;
+    -webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, #000 20%, transparent 100%);
+    mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, #000 20%, transparent 100%);
+    opacity: 0.2;
+  }
+
+  .glass-panel {
+    background: rgba(47, 54, 51, 0.4);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid #3c4a45;
+  }
+
+  /* Carte standard : conteneur bas + voile tonal, comme dans les maquettes. */
+  .panel {
+    @apply relative overflow-hidden rounded border border-outline-variant/30 bg-surface-container-low;
+  }
+
+  .panel-veil {
+    @apply absolute inset-0 z-0 bg-surface-container-high/40 backdrop-blur-[2px];
+  }
+
+  .panel-body {
+    @apply relative z-10 p-md;
+  }
+
+  .panel-title {
+    @apply font-label-caps text-label-caps uppercase text-on-surface-variant;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-sm rounded border border-primary-container px-md py-sm font-label-caps text-label-caps uppercase tracking-wider text-primary-container transition-colors hover:bg-primary-container hover:text-surface-container-lowest disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-primary-container;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-primary hover:bg-slate-50;
+    @apply inline-flex items-center justify-center gap-sm rounded border border-outline-variant px-md py-sm font-label-caps text-label-caps uppercase tracking-wider text-on-surface-variant transition-colors hover:border-primary hover:text-primary disabled:cursor-not-allowed disabled:opacity-40;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-sm rounded border border-critical/40 bg-critical/10 px-md py-sm font-label-caps text-label-caps uppercase tracking-wider text-critical transition-colors hover:bg-critical hover:text-surface-container-lowest disabled:cursor-not-allowed disabled:opacity-40;
   }
 
   .input-field {
-    @apply mt-1 w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:border-accent;
+    @apply block w-full rounded border border-outline-variant bg-surface-container-low px-sm py-sm font-data-mono text-data-mono text-on-surface outline-none transition-all placeholder:text-outline/60;
   }
 
   .input-field:focus {
-    box-shadow: 0 0 0 3px rgba(0, 122, 140, 0.15);
+    border-color: #5ffbd6;
+    background-color: #242c29;
+    box-shadow: 0 0 0 1px #5ffbd6;
   }
 
-  .card {
-    @apply rounded-2xl bg-white p-6;
-    border-radius: 1rem;
-    box-shadow: 0 8px 24px rgba(27, 58, 92, 0.08);
+  .field-label {
+    @apply mb-xs block font-label-caps text-label-caps uppercase text-on-surface-variant;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-xs rounded border px-2 py-1 font-label-caps text-label-caps uppercase;
+  }
+
+  .data-table {
+    @apply w-full border-collapse text-left font-data-mono text-data-mono;
+  }
+
+  .data-table thead tr {
+    @apply border-b border-outline-variant/30 bg-surface-variant/20;
+  }
+
+  .data-table th {
+    @apply px-md py-sm font-medium text-on-surface-variant;
+  }
+
+  .data-table td {
+    @apply px-md py-sm;
+  }
+
+  .data-table tbody tr {
+    @apply border-b border-outline-variant/10 transition-colors hover:bg-surface-variant/10;
+  }
+}
+
+@layer utilities {
+  .outer-glow-critical {
+    box-shadow: 0 0 8px #f43f5e;
+  }
+
+  .outer-glow-accent {
+    box-shadow: 0 0 8px rgba(95, 251, 214, 0.4);
   }
 }

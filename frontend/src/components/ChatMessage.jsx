@@ -32,7 +32,10 @@ function renderInline(text, isUser) {
     const bold = part.match(/^\*\*([^*]+)\*\*$/);
     if (bold) {
       return (
-        <strong key={index} className={isUser ? "font-semibold text-white" : "font-semibold text-primary"}>
+        <strong
+          key={index}
+          className={isUser ? "font-semibold text-on-primary" : "font-semibold text-primary"}
+        >
           {bold[1]}
         </strong>
       );
@@ -43,8 +46,10 @@ function renderInline(text, isUser) {
       return (
         <code
           key={index}
-          className={`rounded px-1.5 py-0.5 font-mono text-[12px] ${
-            isUser ? "bg-white/20 text-white" : "bg-slate-200/80 text-slate-800"
+          className={`rounded px-1.5 py-0.5 font-data-mono text-[12px] ${
+            isUser
+              ? "bg-on-primary/15 text-on-primary"
+              : "bg-surface-container-lowest text-primary-container"
           }`}
         >
           {inlineCode[1]}
@@ -60,8 +65,8 @@ function renderInline(text, isUser) {
           href={mdLink[2]}
           target="_blank"
           rel="noreferrer"
-          className={`underline underline-offset-2 break-all ${
-            isUser ? "text-white" : "text-accent"
+          className={`break-all underline underline-offset-2 ${
+            isUser ? "text-on-primary" : "text-primary-container"
           }`}
         >
           {mdLink[1]}
@@ -76,8 +81,8 @@ function renderInline(text, isUser) {
           href={part.replace(/[.,;:!?)]+$/, "")}
           target="_blank"
           rel="noreferrer"
-          className={`underline underline-offset-2 break-all ${
-            isUser ? "text-white" : "text-accent"
+          className={`break-all underline underline-offset-2 ${
+            isUser ? "text-on-primary" : "text-primary-container"
           }`}
         >
           {part.replace(/[.,;:!?)]+$/, "")}
@@ -200,12 +205,12 @@ function parseBlocks(content) {
 
 function CodeBlock({ language, code }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-700 bg-[#0f172a] text-slate-100 shadow-sm">
-      <div className="flex items-center justify-between border-b border-slate-700 px-3 py-1.5 text-[11px] uppercase tracking-wide text-slate-300">
+    <div className="overflow-hidden rounded border border-outline-variant/50 bg-surface-container-lowest">
+      <div className="flex items-center justify-between border-b border-outline-variant/30 px-sm py-1.5 font-label-caps text-label-caps uppercase text-on-surface-variant">
         <span>{language || "bash"}</span>
-        <span className="text-slate-500">commande</span>
+        <span className="text-outline">commande</span>
       </div>
-      <pre className="overflow-x-auto px-3 py-3 font-mono text-[12px] leading-relaxed">
+      <pre className="overflow-x-auto px-sm py-sm font-data-mono text-[12px] leading-relaxed text-primary-container">
         <code>{code}</code>
       </pre>
     </div>
@@ -218,8 +223,10 @@ export default function ChatMessage({ content, role }) {
 
   return (
     <div
-      className={`max-w-3xl rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-        isUser ? "ml-auto bg-accent text-white" : "bg-surface text-slate-700"
+      className={`max-w-3xl rounded px-md py-sm leading-relaxed ${
+        isUser
+          ? "ml-auto bg-primary-container text-on-primary"
+          : "border border-outline-variant/30 bg-surface-container-low text-on-surface-variant"
       }`}
     >
       <div className="space-y-3">
@@ -230,7 +237,10 @@ export default function ChatMessage({ content, role }) {
 
           if (block.type === "heading") {
             return (
-              <p key={index} className={`font-semibold ${isUser ? "text-white" : "text-primary"}`}>
+              <p
+                key={index}
+                className={`font-semibold ${isUser ? "text-on-primary" : "text-primary"}`}
+              >
                 {renderInline(block.text, isUser)}
               </p>
             );
@@ -251,12 +261,15 @@ export default function ChatMessage({ content, role }) {
 
           if (block.type === "table") {
             return (
-              <div key={index} className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
-                <table className="min-w-full text-left text-xs text-slate-700">
-                  <thead className="bg-primary/95 text-white">
+              <div
+                key={index}
+                className="overflow-x-auto rounded border border-outline-variant/30 bg-surface-container-lowest"
+              >
+                <table className="min-w-full text-left font-data-mono text-[12px] text-on-surface-variant">
+                  <thead className="bg-surface-variant/40 text-on-surface">
                     <tr>
                       {block.headers.map((header, headerIndex) => (
-                        <th key={headerIndex} className="px-3 py-2 font-semibold whitespace-nowrap">
+                        <th key={headerIndex} className="whitespace-nowrap px-sm py-base font-semibold">
                           {header}
                         </th>
                       ))}
@@ -264,9 +277,9 @@ export default function ChatMessage({ content, role }) {
                   </thead>
                   <tbody>
                     {block.rows.map((row, rowIndex) => (
-                      <tr key={rowIndex} className={rowIndex % 2 === 0 ? "bg-white" : "bg-slate-50"}>
+                      <tr key={rowIndex} className="border-t border-outline-variant/20">
                         {block.headers.map((_, cellIndex) => (
-                          <td key={cellIndex} className="px-3 py-2 align-top border-t border-slate-100">
+                          <td key={cellIndex} className="px-sm py-base align-top">
                             {row[cellIndex] || "-"}
                           </td>
                         ))}

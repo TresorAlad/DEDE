@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { Copy, Pencil, Play, Plus, ShieldCheck, Trash2, X } from "lucide-react";
 import AppShell from "../components/AppShell";
 import ConfirmDialog from "../components/ConfirmDialog";
+import Icon from "../components/Icon";
 import PageHeader from "../components/PageHeader";
 import StatusBadge from "../components/StatusBadge";
 import { CardSkeleton } from "../components/Skeleton";
@@ -15,6 +15,27 @@ function normalizeDomain(value) {
     .replace(/^https?:\/\//, "")
     .replace(/\/.*$/, "")
     .replace(/:\d+$/, "");
+}
+
+function formatDateTime(value) {
+  if (!value) return "-";
+  try {
+    return new Date(value).toLocaleString("fr-FR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return "-";
+  }
+}
+
+function scoreColor(score) {
+  if (score >= 75) return "#5ffbd6";
+  if (score >= 50) return "#f59e0b";
+  return "#f43f5e";
 }
 
 export default function Platforms() {
@@ -164,229 +185,296 @@ export default function Platforms() {
     setMessage("Jeton copié dans le presse-papiers.");
   }
 
+  const verifiedCount = platforms.filter((p) => p.verification_status === "verified").length;
+
   return (
     <AppShell>
       <PageHeader
-        title="Plateformes"
-        subtitle="Vérifiez la propriété puis lancez un audit de sécurité."
+        title="Gestion des plateformes"
+        subtitle={`${verifiedCount} plateforme(s) vérifiée(s) sur ${platforms.length} enregistrée(s).`}
         actions={
-          <Link to="/platforms/new" className="btn-primary">
-            <Plus size={16} />
-            Ajouter une plateforme
+          <Link
+            to="/platforms/new"
+            className="btn-primary shadow-[0_0_8px_rgba(56,222,187,0.2)] hover:shadow-[0_0_12px_rgba(56,222,187,0.4)]"
+          >
+            <Icon name="add_link" size={16} />
+            Nouvelle plateforme
           </Link>
         }
       />
 
-      {error && <p className="mb-4 text-sm text-danger">{error}</p>}
-      {message && <p className="mb-4 text-sm text-emerald-600">{message}</p>}
+      {error && (
+        <div className="col-span-12">
+          <p className="flex items-center gap-base rounded border border-critical/30 bg-critical/10 px-sm py-base font-data-mono text-data-mono text-critical">
+            <Icon name="error" size={16} />
+            {error}
+          </p>
+        </div>
+      )}
+      {message && (
+        <div className="col-span-12">
+          <p className="flex items-center gap-base rounded border border-success/30 bg-success/10 px-sm py-base font-data-mono text-data-mono text-success">
+            <Icon name="check_circle" size={16} />
+            {message}
+          </p>
+        </div>
+      )}
 
       {loading ? (
-        <div className="space-y-4">
-          <CardSkeleton />
-          <CardSkeleton />
-        </div>
+        <>
+          <div className="col-span-12 lg:col-span-4">
+            <CardSkeleton />
+          </div>
+          <div className="col-span-12 lg:col-span-4">
+            <CardSkeleton />
+          </div>
+          <div className="col-span-12 lg:col-span-4">
+            <CardSkeleton />
+          </div>
+        </>
       ) : (
-        <ul className="space-y-4">
+        <>
           {platforms.map((platform) => {
             const related = auditsFor(platform.id);
             const latest = related[0];
             const verified = platform.verification_status === "verified";
             const isEditing = editingId === platform.id;
             const busy = busyId === platform.id;
+
             return (
-              <li key={platform.id} className="card">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-3">
-                      <h2 className="text-lg font-semibold text-primary">{platform.name}</h2>
-                      <StatusBadge value={platform.verification_status} />
-                    </div>
-                    <p className="mt-1 text-sm text-slate-500">{platform.domain}</p>
+              <div
+                key={platform.id}
+                className={`group relative overflow-hidden rounded-lg border border-outline-variant/50 bg-surface-container transition-colors hover:border-primary/50 ${
+                  isEditing ? "col-span-12" : "col-span-12 md:col-span-6 lg:col-span-4"
+                }`}
+              >
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+
+                <div className="flex items-center justify-between border-b border-outline-variant/50 bg-surface-container-high/50 p-md">
+                  <div className="flex min-w-0 items-center gap-sm">
+                    <Icon name={verified ? "dns" : "vpn_lock"} className="text-primary" />
+                    <h3 className="truncate font-body-lg text-body-lg font-semibold text-primary">
+                      {platform.name}
+                    </h3>
+                  </div>
+                  <StatusBadge value={platform.verification_status} />
+                </div>
+
+                <div className="relative z-10 flex flex-col gap-md p-md">
+                  <div className="flex items-center justify-between gap-sm">
+                    <span className="font-data-mono text-data-mono text-on-surface-variant">Domaine</span>
                     <a
                       href={platform.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-sm text-accent hover:underline"
+                      className="truncate font-data-mono text-data-mono text-primary transition-colors hover:text-primary-container"
                     >
-                      {platform.url}
+                      {platform.domain}
                     </a>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {!isEditing && (
-                      <>
-                        <button
-                          type="button"
-                          disabled={busy}
-                          onClick={() => startEdit(platform)}
-                          className="btn-ghost"
-                          title="Modifier"
-                        >
-                          <Pencil size={16} />
-                          Modifier
-                        </button>
-                        <button
-                          type="button"
-                          disabled={busy}
-                          onClick={() => setPlatformToDelete(platform)}
-                          className="btn-ghost text-danger hover:bg-red-50"
-                          title="Supprimer"
-                        >
-                          <Trash2 size={16} />
-                          Supprimer
-                        </button>
-                        {!verified && (
-                          <button
-                            type="button"
-                            disabled={busy}
-                            onClick={() => verifyPlatform(platform.id)}
-                            className="btn-accent"
-                          >
-                            <ShieldCheck size={16} />
-                            Vérifier la propriété
-                          </button>
-                        )}
-                        {verified && (
-                          <button
-                            type="button"
-                            disabled={busy}
-                            onClick={() => startAudit(platform.id)}
-                            className="btn-primary"
-                          >
-                            <Play size={16} />
-                            Lancer un audit
-                          </button>
-                        )}
-                      </>
-                    )}
+
+                  <div className="flex items-center justify-between gap-sm">
+                    <span className="font-data-mono text-data-mono text-on-surface-variant">
+                      Dernier audit
+                    </span>
+                    <span className="font-data-mono text-data-mono text-primary">
+                      {latest ? formatDateTime(latest.created_at) : "Jamais"}
+                    </span>
                   </div>
-                </div>
 
-                {isEditing && (
-                  <form
-                    className="mt-4 space-y-3 rounded-2xl border border-slate-200 bg-surface px-4 py-4"
-                    onSubmit={(event) => {
-                      event.preventDefault();
-                      saveEdit(platform.id);
-                    }}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="text-sm font-medium text-primary">Modifier la plateforme</p>
-                      <button
-                        type="button"
-                        onClick={cancelEdit}
-                        className="btn-ghost shrink-0 px-3 py-1.5"
-                        title="Annuler"
-                      >
-                        <X size={16} />
-                        Annuler
-                      </button>
-                    </div>
-                    <label className="block text-sm text-slate-600">
-                      Nom
-                      <input
-                        className="input-field"
-                        type="text"
-                        value={editForm.name}
-                        onChange={(e) => updateEditField("name", e.target.value)}
-                        required
-                      />
-                    </label>
-                    <label className="block text-sm text-slate-600">
-                      Domaine
-                      <input
-                        className="input-field"
-                        type="text"
-                        value={editForm.domain}
-                        onChange={(e) => {
-                          setUrlTouched(false);
-                          updateEditField("domain", e.target.value);
-                        }}
-                        required
-                      />
-                      <span className="mt-1 block text-xs text-slate-400">
-                        Un changement de domaine ou d'URL réinitialise la vérification de propriété.
-                      </span>
-                    </label>
-                    <label className="block text-sm text-slate-600">
-                      URL principale
-                      <input
-                        className="input-field"
-                        type="url"
-                        value={editForm.url}
-                        onChange={(e) => {
-                          setUrlTouched(true);
-                          updateEditField("url", e.target.value);
-                        }}
-                        required
-                      />
-                    </label>
-                    <div className="flex flex-wrap gap-2 pt-1">
-                      <button type="submit" disabled={busy} className="btn-primary">
-                        {busy ? "Enregistrement..." : "Enregistrer"}
-                      </button>
-                      <button type="button" onClick={cancelEdit} className="btn-ghost">
-                        Annuler
-                      </button>
-                    </div>
-                  </form>
-                )}
-
-                {!verified && platform.verification_token && !isEditing && (
-                  <div className="mt-4 rounded-2xl border border-dashed border-slate-300 bg-surface px-4 py-3 text-sm text-slate-600">
-                    <p className="font-medium text-primary">Preuve de propriété requise</p>
-                    <p className="mt-1">
-                      Déposez un fichier accessible publiquement à l'adresse suivante, contenant
-                      exactement le jeton ci-dessous, puis cliquez sur « Vérifier la propriété ».
-                    </p>
-                    <code className="mt-2 block break-all rounded-lg bg-white px-3 py-2 text-xs text-slate-700">
-                      https://{platform.domain}/.well-known/dede-verification.txt
-                    </code>
-                    <div className="mt-2 flex items-center gap-2">
-                      <code className="flex-1 break-all rounded-lg bg-white px-3 py-2 text-xs text-slate-700">
-                        {platform.verification_token}
-                      </code>
-                      <button
-                        type="button"
-                        onClick={() => copyToken(platform.verification_token)}
-                        className="btn-ghost shrink-0"
-                        title="Copier le jeton"
-                      >
-                        <Copy size={16} />
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {!isEditing && (
-                  <div className="mt-4 rounded-2xl bg-surface px-4 py-3 text-sm text-slate-600">
-                    {latest ? (
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <span>
-                          Dernier audit #{latest.id} - {latest.status}
-                          {latest.score != null ? ` - score ${Math.round(latest.score)}` : ""}
+                  <div className="flex items-center justify-between gap-sm">
+                    <span className="font-data-mono text-data-mono text-on-surface-variant">Score</span>
+                    {latest?.score != null ? (
+                      <div className="flex items-center gap-base">
+                        <span
+                          className="font-display-lg leading-none"
+                          style={{ fontSize: "20px", color: scoreColor(latest.score) }}
+                        >
+                          {Math.round(latest.score)}
                         </span>
-                        <Link to={`/reports/${latest.id}`} className="text-accent hover:underline">
-                          Voir le rapport
-                        </Link>
+                        <span className="font-data-mono text-[12px] text-on-surface-variant">/100</span>
                       </div>
                     ) : (
-                      <span>Aucun audit pour cette plateforme.</span>
+                      <span className="font-data-mono text-data-mono text-on-surface-variant">
+                        {latest ? "En attente" : "-"}
+                      </span>
+                    )}
+                  </div>
+
+                  {!verified && platform.verification_token && !isEditing && (
+                    <div className="rounded border border-dashed border-outline-variant bg-surface-container-lowest p-sm">
+                      <p className="flex items-center gap-base font-label-caps text-label-caps uppercase text-warning">
+                        <Icon name="gpp_maybe" size={16} />
+                        Preuve de propriété requise
+                      </p>
+                      <p className="mt-base text-[14px] leading-5 text-on-surface-variant">
+                        Déposez un fichier public contenant exactement ce jeton, puis lancez la
+                        vérification.
+                      </p>
+                      <code className="mt-base block break-all rounded border border-outline-variant/30 bg-background px-sm py-base font-data-mono text-[12px] text-on-surface-variant">
+                        https://{platform.domain}/.well-known/dede-verification.txt
+                      </code>
+                      <div className="mt-base flex items-center gap-base">
+                        <code className="flex-1 break-all rounded border border-outline-variant/30 bg-background px-sm py-base font-data-mono text-[12px] text-primary-container">
+                          {platform.verification_token}
+                        </code>
+                        <button
+                          type="button"
+                          onClick={() => copyToken(platform.verification_token)}
+                          className="shrink-0 rounded border border-outline-variant p-base text-on-surface-variant transition-colors hover:border-primary hover:text-primary"
+                          title="Copier le jeton"
+                        >
+                          <Icon name="content_copy" size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {isEditing && (
+                    <form
+                      className="space-y-sm rounded border border-outline-variant/50 bg-surface-container-lowest p-md"
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        saveEdit(platform.id);
+                      }}
+                    >
+                      <p className="font-label-caps text-label-caps uppercase text-primary-container">
+                        Modifier la plateforme
+                      </p>
+
+                      <div>
+                        <label className="field-label">Nom</label>
+                        <input
+                          className="input-field"
+                          type="text"
+                          value={editForm.name}
+                          onChange={(e) => updateEditField("name", e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="field-label">Domaine</label>
+                        <input
+                          className="input-field"
+                          type="text"
+                          value={editForm.domain}
+                          onChange={(e) => {
+                            setUrlTouched(false);
+                            updateEditField("domain", e.target.value);
+                          }}
+                          required
+                        />
+                        <span className="mt-base block font-data-mono text-[12px] text-on-surface-variant">
+                          Un changement de domaine ou d'URL réinitialise la vérification de propriété.
+                        </span>
+                      </div>
+
+                      <div>
+                        <label className="field-label">URL principale</label>
+                        <input
+                          className="input-field"
+                          type="url"
+                          value={editForm.url}
+                          onChange={(e) => {
+                            setUrlTouched(true);
+                            updateEditField("url", e.target.value);
+                          }}
+                          required
+                        />
+                      </div>
+
+                      <div className="flex flex-wrap gap-sm pt-xs">
+                        <button type="submit" disabled={busy} className="btn-primary">
+                          <Icon name="save" size={16} />
+                          {busy ? "Enregistrement..." : "Enregistrer"}
+                        </button>
+                        <button type="button" onClick={cancelEdit} className="btn-ghost">
+                          <Icon name="close" size={16} />
+                          Annuler
+                        </button>
+                      </div>
+                    </form>
+                  )}
+                </div>
+
+                {!isEditing && (
+                  <div className="relative z-10 flex flex-wrap items-center justify-between gap-sm border-t border-outline-variant/50 bg-surface-container-high/30 px-md py-sm">
+                    <div className="flex items-center gap-base">
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => startEdit(platform)}
+                        className="rounded border border-outline-variant p-base text-on-surface-variant transition-colors hover:border-primary hover:text-primary disabled:opacity-40"
+                        title="Modifier"
+                      >
+                        <Icon name="edit" size={16} />
+                      </button>
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => setPlatformToDelete(platform)}
+                        className="rounded border border-critical/40 p-base text-critical transition-colors hover:bg-critical hover:text-surface-container-lowest disabled:opacity-40"
+                        title="Supprimer"
+                      >
+                        <Icon name="delete" size={16} />
+                      </button>
+                      {latest && (
+                        <Link
+                          to={`/reports/${latest.id}`}
+                          className="rounded border border-outline-variant p-base text-on-surface-variant transition-colors hover:border-primary hover:text-primary"
+                          title="Voir le dernier rapport"
+                        >
+                          <Icon name="assessment" size={16} />
+                        </Link>
+                      )}
+                    </div>
+
+                    {verified ? (
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => startAudit(platform.id)}
+                        className="btn-primary px-sm py-base"
+                      >
+                        <Icon name="play_arrow" size={16} />
+                        {busy ? "Lancement..." : "Lancer un audit"}
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={busy}
+                        onClick={() => verifyPlatform(platform.id)}
+                        className="btn-ghost px-sm py-base"
+                      >
+                        <Icon name="verified_user" size={16} />
+                        {busy ? "Vérification..." : "Vérifier la propriété"}
+                      </button>
                     )}
                   </div>
                 )}
-              </li>
+              </div>
             );
           })}
+
           {!platforms.length && (
-            <li className="card text-center text-sm text-slate-500">
-              Aucune plateforme pour le moment.{" "}
-              <Link to="/platforms/new" className="text-accent hover:underline">
-                Ajoutez-en une
-              </Link>
-              .
-            </li>
+            <div className="col-span-12">
+              <div className="panel">
+                <div className="panel-veil" />
+                <div className="relative z-10 flex flex-col items-center gap-sm p-lg text-center">
+                  <Icon name="inventory_2" size={32} className="text-outline" />
+                  <p className="text-on-surface-variant">
+                    Aucune plateforme enregistrée pour le moment.
+                  </p>
+                  <Link to="/platforms/new" className="btn-primary">
+                    <Icon name="add_link" size={18} />
+                    Ajouter une plateforme
+                  </Link>
+                </div>
+              </div>
+            </div>
           )}
-        </ul>
+        </>
       )}
 
       <ConfirmDialog

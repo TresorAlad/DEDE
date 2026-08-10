@@ -1,0 +1,25 @@
+/* Genere par scripts/build-icon-font.mjs - ne pas modifier a la main.
+   73 icones : add, add_link, arrow_back, arrow_forward, assessment, assistant, badge, bolt, check, check_circle, chevron_right, close, code, construction, content_copy, conversion_path, corporate_fare, dashboard, delete, description, dns, domain, done, download, edit, email, error, explore, forum, gpp_maybe, history, http, hub, inbox, info, inventory_2, key, label, lightbulb, link, list, lock, lock_reset, login, logout, mail, monitoring, neurology, password, pending, person, play_arrow, progress_activity, psychology, radar, refresh, save, schedule, search, security, send, settings, shield_lock, speed, table, task_alt, terminal, verified, verified_user, visibility, visibility_off, vpn_lock, warning */
+@font-face {
+  font-family: "Material Symbols Outlined";
+  font-style: normal;
+  font-weight: 100 700;
+  /* block : n'affiche jamais le nom de la ligature en clair. */
+  font-display: block;
+  src: url("../assets/material-symbols-subset.woff2") format("woff2");
+}
+
+.material-symbols-outlined {
+  font-family: "Material Symbols Outlined";
+  font-weight: normal;
+  font-style: normal;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "liga";
+}

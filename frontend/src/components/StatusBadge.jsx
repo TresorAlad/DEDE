@@ -1,29 +1,36 @@
+// Palette d'etats reprise des maquettes : vert operationnel, ambre, rouge critique.
+const SUCCESS = "border-success/30 bg-success/10 text-success";
+const WARNING = "border-warning/30 bg-warning/10 text-warning";
+const CRITICAL = "border-critical/30 bg-critical/10 text-critical";
+const NEUTRAL = "border-outline-variant/30 bg-surface-variant/30 text-on-surface-variant";
+const ACCENT = "border-primary-container/30 bg-primary-container/10 text-primary-container";
+
 const STYLES = {
-  pending: "bg-amber-100 text-amber-700",
-  verified: "bg-emerald-100 text-emerald-700",
-  queued: "bg-slate-100 text-slate-600",
-  running: "bg-sky-100 text-sky-700",
-  completed: "bg-emerald-100 text-emerald-700",
-  failed: "bg-rose-100 text-rose-700",
-  critical: "bg-rose-100 text-rose-700",
-  high: "bg-orange-100 text-orange-700",
-  medium: "bg-amber-100 text-amber-700",
-  low: "bg-sky-100 text-sky-700",
-  info: "bg-slate-100 text-slate-600",
+  pending: WARNING,
+  verified: SUCCESS,
+  queued: NEUTRAL,
+  running: ACCENT,
+  completed: SUCCESS,
+  failed: CRITICAL,
+  critical: CRITICAL,
+  high: WARNING,
+  medium: WARNING,
+  low: ACCENT,
+  info: NEUTRAL,
   // L'IA renvoie parfois les sévérités en français.
-  critique: "bg-rose-100 text-rose-700",
-  haute: "bg-orange-100 text-orange-700",
-  élevée: "bg-orange-100 text-orange-700",
-  moyenne: "bg-amber-100 text-amber-700",
-  modérée: "bg-amber-100 text-amber-700",
-  basse: "bg-sky-100 text-sky-700",
-  faible: "bg-sky-100 text-sky-700",
-  Faible: "bg-emerald-100 text-emerald-700",
-  Moyen: "bg-amber-100 text-amber-700",
-  Modéré: "bg-amber-100 text-amber-700",
-  Élevé: "bg-orange-100 text-orange-700",
-  Critique: "bg-rose-100 text-rose-700",
-  Indéterminé: "bg-slate-200 text-slate-600",
+  critique: CRITICAL,
+  haute: WARNING,
+  élevée: WARNING,
+  moyenne: WARNING,
+  modérée: WARNING,
+  basse: ACCENT,
+  faible: ACCENT,
+  Faible: SUCCESS,
+  Moyen: WARNING,
+  Modéré: WARNING,
+  Élevé: WARNING,
+  Critique: CRITICAL,
+  Indéterminé: NEUTRAL,
 };
 
 const LABELS = {
@@ -37,15 +44,18 @@ const LABELS = {
 
 export default function StatusBadge({ value, label }) {
   const key = value || "info";
-  const style = STYLES[key] || "bg-slate-100 text-slate-600";
+  const style = STYLES[key] || NEUTRAL;
   const text = label || LABELS[key] || key;
   const pulsing = key === "running" || key === "queued";
+  const dangerous = style === CRITICAL;
 
   return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium uppercase tracking-wide ${style}`}
-    >
-      {pulsing && <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-current" />}
+    <span className={`chip ${style}`}>
+      <span
+        className={`h-1.5 w-1.5 rounded-pill bg-current ${pulsing ? "animate-pulse" : ""} ${
+          dangerous ? "outer-glow-critical" : ""
+        }`}
+      />
       {text}
     </span>
   );

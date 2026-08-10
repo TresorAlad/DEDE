@@ -1,23 +1,30 @@
-import { Bar, BarChart, ResponsiveContainer } from "recharts";
+import Icon from "./Icon";
 
-export default function StatCard({ label, value, hint, trend = [], color = "#007A8C" }) {
-  const chartData = (trend.length ? trend : [2, 4, 3, 6, 5, 7, 4]).map((v, i) => ({ i, v }));
+export default function StatCard({ label, value, hint, icon = "monitoring", tone = "accent" }) {
+  const tones = {
+    accent: "text-primary-container border-primary-container/30 bg-primary-container/10",
+    success: "text-success border-success/30 bg-success/10",
+    warning: "text-warning border-warning/30 bg-warning/10",
+    critical: "text-critical border-critical/30 bg-critical/10",
+    neutral: "text-secondary border-secondary/30 bg-secondary/10",
+  };
 
   return (
-    <div className="card p-5 transition hover:-translate-y-0.5 hover:shadow-md">
-      <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">{label}</p>
-      <div className="mt-2 flex items-end justify-between gap-3">
-        <div>
-          <p className="text-3xl font-bold text-primary">{value}</p>
-          {hint && <p className="mt-1 text-xs text-slate-500">{hint}</p>}
+    <div className="panel h-full">
+      <div className="panel-veil" />
+      <div className="relative z-10 flex h-full flex-col p-md">
+        <div className="mb-sm flex items-start justify-between border-b border-outline-variant/30 pb-xs">
+          <span className="panel-title">{label}</span>
+          <span className={`rounded border p-xs ${tones[tone] || tones.accent}`}>
+            <Icon name={icon} size={18} />
+          </span>
         </div>
-        <div className="h-12 w-24">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData}>
-              <Bar dataKey="v" fill={color} radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        <p className="font-display-lg tracking-tighter text-primary" style={{ fontSize: "32px", lineHeight: "40px" }}>
+          {value}
+        </p>
+        {hint && (
+          <p className="mt-auto pt-sm font-data-mono text-[12px] text-on-surface-variant">{hint}</p>
+        )}
       </div>
     </div>
   );

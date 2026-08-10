@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from "react-router-dom";
+import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
@@ -27,7 +28,7 @@ function PrivateRoute({ children }) {
 export default function App() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
       <Route path="/cgu" element={<CGU />} />
@@ -88,6 +89,7 @@ export default function App() {
           </PrivateRoute>
         }
       />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
 }

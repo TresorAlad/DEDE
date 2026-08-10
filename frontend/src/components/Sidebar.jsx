@@ -1,16 +1,15 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, LogOut, PlusCircle, ScrollText, Server, UserCog } from "lucide-react";
 import ConfirmDialog from "./ConfirmDialog";
+import Icon from "./Icon";
 import { clearToken } from "../api/client";
 import { clearAuthUserCache, useAuthUser } from "../hooks/useAuthUser";
 
 const links = [
-  { to: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
-  { to: "/platforms", label: "Plateformes", icon: Server },
-  { to: "/platforms/new", label: "Ajouter une plateforme", icon: PlusCircle },
-  { to: "/reports", label: "Rapports", icon: ScrollText },
-  { to: "/profile", label: "Mon profil", icon: UserCog },
+  { to: "/dashboard", label: "Tableau de bord", icon: "dashboard" },
+  { to: "/platforms", label: "Plateformes", icon: "inventory_2" },
+  { to: "/reports", label: "Rapports", icon: "assessment" },
+  { to: "/profile", label: "Profil", icon: "settings" },
 ];
 
 export default function Sidebar() {
@@ -21,6 +20,9 @@ export default function Sidebar() {
   function isActive(path) {
     if (path === "/reports") {
       return location.pathname === "/reports" || location.pathname.startsWith("/reports/");
+    }
+    if (path === "/platforms") {
+      return location.pathname === "/platforms";
     }
     return location.pathname === path;
   }
@@ -39,54 +41,78 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="fixed top-0 left-0 z-40 flex h-screen w-64 flex-col overflow-hidden bg-primary px-5 py-6 text-white">
-      <div className="shrink-0 px-2">
-        <p className="text-2xl font-bold tracking-wide">ƉEƉE</p>
-        <p className="mt-1 text-sm text-white/70">Audit cybersécurité</p>
+    <nav className="fixed left-0 top-0 z-50 flex h-screen w-64 flex-col border-r border-outline-variant/30 bg-surface-container-low px-sm py-md">
+      <div className="mb-xl flex items-center gap-sm px-sm">
+        <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-outline-variant/30 bg-primary-container/10">
+          <Icon name="shield_lock" size={24} className="text-primary-container" />
+        </div>
+        <div className="flex flex-col">
+          <span
+            className="font-display-lg font-bold tracking-tighter text-primary"
+            style={{ fontSize: "24px", lineHeight: "32px" }}
+          >
+            ƉEƉE
+          </span>
+          <span className="font-label-caps text-label-caps uppercase text-on-surface-variant">
+            Moteur cybersécurité
+          </span>
+        </div>
       </div>
 
-      <nav className="mt-8 flex min-h-0 flex-1 flex-col gap-1.5 overflow-y-auto">
+      <div className="flex min-h-0 flex-1 flex-col gap-xs overflow-y-auto">
         {links.map((link) => {
-          const Icon = link.icon;
           const active = isActive(link.to);
           return (
             <Link
               key={link.to}
               to={link.to}
-              className={`flex items-center gap-3 rounded-full px-4 py-2.5 text-sm ${
+              className={
                 active
-                  ? "bg-white/15 font-medium text-white shadow-sm"
-                  : "text-white/75 hover:bg-white/10 hover:text-white"
-              }`}
+                  ? "flex items-center gap-sm rounded border-r-2 border-primary bg-primary/5 px-sm py-sm font-bold text-primary transition-all duration-200 ease-in-out"
+                  : "flex items-center gap-sm rounded px-sm py-sm font-medium text-on-surface-variant transition-colors duration-200 ease-in-out hover:bg-surface-variant/50 hover:text-primary"
+              }
             >
-              <Icon size={18} className="shrink-0" />
+              <Icon name={link.icon} />
               <span className="truncate">{link.label}</span>
             </Link>
           );
         })}
-      </nav>
+      </div>
 
-      <div className="mt-4 shrink-0 rounded-2xl bg-white/10 p-4">
+      <div className="mb-md">
+        <Link
+          to="/platforms/new"
+          className="flex w-full items-center justify-center gap-sm rounded border border-primary px-md py-sm font-label-caps text-label-caps uppercase text-primary transition-colors duration-200 hover:bg-primary hover:text-on-primary"
+        >
+          <Icon name="add" size={18} />
+          Nouvel audit
+        </Link>
+      </div>
+
+      <div className="flex flex-col gap-xs border-t border-outline-variant/30 pt-md">
         <Link
           to="/profile"
-          className="flex items-center gap-3 rounded-xl p-1 transition-colors hover:bg-white/10"
-          title="Modifier mon profil"
+          className="flex items-center gap-sm rounded px-sm py-sm text-on-surface-variant transition-colors duration-200 hover:bg-surface-variant/50 hover:text-primary"
         >
-          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-semibold">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-outline-variant/30 bg-primary-container/10 font-label-caps text-label-caps text-primary-container">
             {initials}
-          </div>
-          <div className="min-w-0">
-            <p className="truncate text-sm font-medium">{user?.full_name || "Utilisateur"}</p>
-            <p className="truncate text-xs text-white/60">{user?.organization_name || "Organisation"}</p>
-          </div>
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-[14px] font-medium leading-5 text-on-surface">
+              {user?.full_name || "Utilisateur"}
+            </span>
+            <span className="block truncate font-data-mono text-[12px] leading-4 text-on-surface-variant">
+              {user?.organization_name || "Organisation"}
+            </span>
+          </span>
         </Link>
         <button
           type="button"
           onClick={() => setLogoutOpen(true)}
-          className="mt-4 flex w-full items-center gap-2 rounded-full px-3 py-2 text-left text-sm text-white/80 hover:bg-white/10 hover:text-white"
+          className="flex items-center gap-sm rounded px-sm py-sm text-left font-medium text-on-surface-variant transition-colors duration-200 hover:bg-surface-variant/50 hover:text-critical"
         >
-          <LogOut size={16} />
-          Se déconnecter
+          <Icon name="logout" />
+          <span>Déconnexion</span>
         </button>
       </div>
 
@@ -100,6 +126,6 @@ export default function Sidebar() {
         onConfirm={confirmLogout}
         onCancel={() => setLogoutOpen(false)}
       />
-    </aside>
+    </nav>
   );
 }

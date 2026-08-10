@@ -1,4 +1,55 @@
-import { AlertCircle, Check, Loader2 } from "lucide-react";
+import Icon from "./Icon";
+
+const CIRCUMFERENCE = 283;
+
+// Icone et sous-titre associes aux cles d'etape renvoyees par le worker.
+// Les cles heritees couvrent les audits enregistres avant le renommage.
+const MODULE_META = {
+  queued: { icon: "inbox", caption: "Réception de la demande" },
+  surface: { icon: "dns", caption: "Cartographie de la surface exposée" },
+  nuclei: { icon: "radar", caption: "Recherche de vulnérabilités" },
+  ssl: { icon: "lock", caption: "Analyse de la configuration TLS" },
+  headers: { icon: "http", caption: "Contrôle des en-têtes de sécurité" },
+  score: { icon: "speed", caption: "Calcul du score" },
+  ai: { icon: "neurology", caption: "Analyse par l'IA" },
+  done: { icon: "task_alt", caption: "Audit finalisé" },
+  received: { icon: "inbox", caption: "Réception de la demande" },
+  resolve: { icon: "dns", caption: "Résolution DNS" },
+  subdomains: { icon: "dns", caption: "Cartographie de la surface exposée" },
+  scoring: { icon: "speed", caption: "Calcul du score" },
+  analysis: { icon: "radar", caption: "Analyse en cours" },
+};
+
+const STATE_STYLE = {
+  done: {
+    strip: "bg-surface-tint",
+    wrapper: "border-outline-variant/30 bg-surface-container",
+    icon: "text-surface-tint",
+    chip: "border-surface-tint/20 bg-surface-tint/10 text-surface-tint",
+    label: "Terminé",
+  },
+  active: {
+    strip: "bg-primary-container animate-pulse",
+    wrapper: "border-primary-container/30 bg-primary-container/5 shadow-[0_0_8px_rgba(95,251,214,0.1)]",
+    icon: "text-primary-container",
+    chip: "border-primary-container/20 bg-primary-container/10 text-primary-container",
+    label: "En cours",
+  },
+  failed: {
+    strip: "bg-critical",
+    wrapper: "border-critical/30 bg-critical/5",
+    icon: "text-critical",
+    chip: "border-critical/30 bg-critical/10 text-critical",
+    label: "Échec",
+  },
+  pending: {
+    strip: "bg-outline-variant",
+    wrapper: "border-outline-variant/30 bg-surface-container opacity-60",
+    icon: "text-on-surface-variant",
+    chip: "border-outline-variant/30 bg-surface-variant text-on-surface-variant",
+    label: "En attente",
+  },
+};
 
 function formatTime(value) {
   if (!value) return "";
@@ -13,9 +64,6 @@ function formatTime(value) {
   }
 }
 
-/**
- * Bande de suivi de l'audit, étape par étape (tour après tour).
- */
 export default function AuditProgress({
   status = "queued",
   createdAt,
@@ -39,16 +87,10 @@ export default function AuditProgress({
   } else {
     // Anciens audits sans progress_json : repli sur 3 étapes.
     steps = [
-      {
-        key: "received",
-        label: "Reçu",
-        time: formatTime(createdAt),
-        state: "done",
-        detail: "",
-      },
+      { key: "received", label: "Reçu", time: formatTime(createdAt), state: "done", detail: "" },
       {
         key: "analysis",
-        label: failed ? "Analyse interrompue" : "Analyse en cours",
+        label: failed ? "Analyse interrompue" : "Analyse",
         time: formatTime(startedAt),
         state: completed ? "done" : running ? "active" : failed ? "failed" : "pending",
         detail: "",
@@ -63,106 +105,159 @@ export default function AuditProgress({
     ];
   }
 
-  // Si le statut global est terminé, toutes les étapes sont validées.
   if (completed && steps.length) {
-    steps = steps.map((step) =>
-      step.state === "failed" ? step : { ...step, state: "done" }
-    );
+    steps = steps.map((step) => (step.state === "failed" ? step : { ...step, state: "done" }));
   }
+
+  const doneCount = steps.filter((s) => s.state === "done").length;
+  const percent = steps.length ? Math.round((doneCount / steps.length) * 100) : 0;
+  const offset = CIRCUMFERENCE - (CIRCUMFERENCE * percent) / 100;
+  const ringColor = failed ? "#f43f5e" : "#5ffbd6";
 
   const activeLabel =
     steps.find((s) => s.state === "active")?.label ||
     (completed ? "Terminé" : failed ? "Échec" : running ? "En cours" : "En file");
 
+  const logs = steps
+    .filter((step) => step.time)
+    .map((step) => ({
+      time: step.time,
+      level: step.state === "failed" ? "ERREUR" : step.state === "active" ? "EN COURS" : "INFO",
+      state: step.state,
+      text: step.detail || step.label,
+    }));
+
   return (
-    <div className="rounded-card bg-white p-6 shadow-card">
-      <div className="mb-5 flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <p className="text-sm font-semibold text-primary">Suivi de l'audit</p>
-          <p className="text-xs text-slate-500">
-            Étape actuelle : <span className="font-medium text-primary">{activeLabel}</span>
-          </p>
+    <div className="grid grid-cols-12 gap-gutter">
+      <div className="relative col-span-12 flex flex-col items-center overflow-hidden rounded-lg border border-outline-variant/50 bg-surface-container-low p-md lg:col-span-4">
+        <div className="pointer-events-none absolute inset-0 -translate-y-1/2 rounded-full bg-primary/5 opacity-20 blur-3xl" />
+        <h3 className="mb-lg w-full border-b border-outline-variant/30 pb-sm text-left font-headline-sm text-headline-sm text-primary">
+          Progression globale
+        </h3>
+
+        <div className="relative mb-lg flex h-64 w-64 items-center justify-center">
+          <svg className="h-full w-full -rotate-90" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="45" fill="none" stroke="#2f3633" strokeWidth="2" />
+            <circle
+              cx="50"
+              cy="50"
+              r="45"
+              fill="none"
+              stroke={ringColor}
+              strokeWidth="2"
+              strokeDasharray={CIRCUMFERENCE}
+              strokeDashoffset={offset}
+              className="transition-all duration-1000 ease-out"
+            />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="font-display-lg text-display-lg text-primary">{percent}%</span>
+            <span className="font-label-caps text-label-caps uppercase text-on-surface-variant">
+              {activeLabel}
+            </span>
+          </div>
         </div>
-        <span
-          className={`rounded-full px-3 py-1 text-xs font-medium ${
-            completed
-              ? "bg-emerald-100 text-emerald-700"
-              : failed
-              ? "bg-rose-100 text-rose-700"
-              : "bg-sky-100 text-sky-700"
-          }`}
-        >
-          {completed ? "Terminé" : failed ? "Échec" : running ? "En cours" : "En file"}
-        </span>
+
+        <div className="grid w-full grid-cols-2 gap-md border-t border-outline-variant/30 pt-md">
+          <div className="text-center">
+            <div className="mb-1 font-label-caps text-label-caps uppercase text-on-surface-variant">
+              Démarré
+            </div>
+            <div className="font-data-mono text-data-mono text-primary">
+              {formatTime(startedAt) || formatTime(createdAt) || "--:--:--"}
+            </div>
+          </div>
+          <div className="text-center">
+            <div className="mb-1 font-label-caps text-label-caps uppercase text-on-surface-variant">
+              Étapes
+            </div>
+            <div className="font-data-mono text-data-mono text-primary opacity-70">
+              {doneCount}/{steps.length}
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div className="overflow-x-auto pb-1">
-        <div className="flex min-w-[640px] items-start">
+      <div className="col-span-12 flex flex-col rounded-lg border border-outline-variant/50 bg-surface-container-low p-md lg:col-span-8">
+        <h3 className="mb-md border-b border-outline-variant/30 pb-sm font-headline-sm text-headline-sm text-primary">
+          Modules d'exécution
+        </h3>
+        <div className="flex-1 space-y-md">
           {steps.map((step, index) => {
-            const isLast = index === steps.length - 1;
-            const done = step.state === "done";
-            const active = step.state === "active";
-            const isFailed = step.state === "failed";
+            const style = STATE_STYLE[step.state] || STATE_STYLE.pending;
+            const meta = MODULE_META[step.key] || { icon: "bolt", caption: step.detail || "Étape d'audit" };
             return (
-              <div key={step.key || index} className="flex flex-1 flex-col items-center">
-                <div className="flex w-full items-center">
-                  <div className="flex flex-1 justify-center">
-                    <span
-                      className={`flex h-9 w-9 items-center justify-center rounded-full border-2 transition-colors ${
-                        done
-                          ? "border-primary bg-primary text-white"
-                          : active
-                          ? "border-accent bg-white text-accent"
-                          : isFailed
-                          ? "border-rose-500 bg-rose-500 text-white"
-                          : "border-slate-200 bg-white text-slate-300"
-                      }`}
-                    >
-                      {done ? (
-                        <Check size={18} />
-                      ) : active ? (
-                        <Loader2 size={18} className="animate-spin" />
-                      ) : isFailed ? (
-                        <AlertCircle size={18} />
-                      ) : (
-                        <span className="h-2.5 w-2.5 rounded-full bg-slate-300" />
-                      )}
-                    </span>
+              <div
+                key={step.key || index}
+                className={`relative flex items-center justify-between overflow-hidden rounded border p-sm ${style.wrapper}`}
+              >
+                <span className={`absolute bottom-0 left-0 top-0 w-1 ${style.strip}`} />
+                <div className="flex items-center gap-md pl-2">
+                  <Icon
+                    name={meta.icon}
+                    className={`${style.icon} ${step.state === "active" ? "animate-spin" : ""}`}
+                  />
+                  <div>
+                    <div className="font-body-md font-medium text-primary">{step.label}</div>
+                    <div className="font-label-caps text-label-caps uppercase text-on-surface-variant">
+                      {meta.caption}
+                    </div>
                   </div>
-                  {!isLast && (
-                    <div
-                      className={`h-1 flex-[2] rounded-full ${
-                        steps[index + 1].state === "done" ||
-                        steps[index + 1].state === "active" ||
-                        done
-                          ? "bg-primary"
-                          : "bg-slate-200"
-                      }`}
-                    />
-                  )}
                 </div>
-                <p
-                  className={`mt-2 px-1 text-center text-[11px] font-medium leading-tight ${
-                    done || active
-                      ? "text-primary"
-                      : isFailed
-                      ? "text-rose-600"
-                      : "text-slate-400"
-                  }`}
-                >
-                  {step.label}
-                </p>
-                {step.time && (
-                  <p className="text-center text-[10px] text-slate-400">{step.time}</p>
-                )}
-                {step.detail && (done || active || isFailed) && (
-                  <p className="mt-0.5 max-w-[7.5rem] text-center text-[10px] leading-snug text-slate-500">
-                    {step.detail}
-                  </p>
-                )}
+                <div className="flex items-center gap-sm">
+                  {step.time && (
+                    <span className="font-data-mono text-[12px] text-on-surface-variant">
+                      {step.time}
+                    </span>
+                  )}
+                  <span className={`chip ${style.chip}`}>{style.label}</span>
+                </div>
               </div>
             );
           })}
+        </div>
+      </div>
+
+      <div className="col-span-12 flex h-64 flex-col overflow-hidden rounded-lg border border-outline-variant/50 bg-surface-container-lowest p-sm">
+        <div className="mb-2 flex items-center justify-between border-b border-outline-variant/30 px-2 pb-2">
+          <h3 className="flex items-center gap-base font-label-caps text-label-caps uppercase text-primary">
+            <Icon name="terminal" size={16} />
+            Journal d'exécution
+          </h3>
+          <div className="flex gap-base">
+            <span className="h-2 w-2 rounded-pill bg-error" />
+            <span className="h-2 w-2 rounded-pill bg-outline" />
+            <span className="h-2 w-2 rounded-pill bg-primary-container" />
+          </div>
+        </div>
+        <div className="flex-1 space-y-1 overflow-y-auto p-2 font-data-mono text-[12px] leading-5">
+          {logs.length === 0 && (
+            <p className="text-on-surface-variant opacity-70">En attente du démarrage de l'audit...</p>
+          )}
+          {logs.map((log, index) => (
+            <div key={index} className="flex items-start gap-base">
+              <span className="text-outline-variant">[{log.time}]</span>
+              <span
+                className={
+                  log.state === "failed"
+                    ? "text-critical"
+                    : log.state === "active"
+                    ? "text-primary-container"
+                    : "text-surface-tint"
+                }
+              >
+                [{log.level}]
+              </span>
+              <span className={log.state === "failed" ? "text-critical" : "text-on-surface-variant"}>
+                {log.text}
+              </span>
+            </div>
+          ))}
+          {running && (
+            <div className="mt-md flex animate-pulse items-start gap-base">
+              <span className="text-primary-container">_</span>
+            </div>
+          )}
         </div>
       </div>
     </div>

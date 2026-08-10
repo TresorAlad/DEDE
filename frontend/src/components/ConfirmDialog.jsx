@@ -1,14 +1,16 @@
 import { useEffect, useRef } from "react";
-import { AlertTriangle, X } from "lucide-react";
+import Icon from "./Icon";
 
 const TONES = {
   danger: {
-    iconWrapper: "bg-rose-50 text-danger",
-    confirmButton: "bg-danger text-white hover:bg-danger/90",
+    iconWrapper: "border-critical/30 bg-critical/10 text-critical",
+    confirmButton: "btn-danger",
+    accent: "via-critical",
   },
   primary: {
-    iconWrapper: "bg-sky-50 text-accent",
-    confirmButton: "bg-primary text-white hover:bg-primary/90",
+    iconWrapper: "border-primary-container/30 bg-primary-container/10 text-primary-container",
+    confirmButton: "btn-primary",
+    accent: "via-primary-container",
   },
 };
 
@@ -70,51 +72,45 @@ export default function ConfirmDialog({
         aria-label="Fermer"
         tabIndex={-1}
         onClick={() => !loading && onCancel?.()}
-        className="absolute inset-0 cursor-default bg-primary/40 backdrop-blur-sm animate-fade-in"
+        className="absolute inset-0 animate-fade-in cursor-default bg-surface-container-lowest/70 backdrop-blur-sm"
       />
 
-      <div className="relative w-full max-w-md animate-scale-in rounded-2xl bg-white p-6 shadow-card">
+      <div className="glass-panel relative w-full max-w-md animate-scale-in overflow-hidden rounded-xl p-md shadow-2xl">
+        <div
+          className={`absolute left-0 top-0 h-1 w-full bg-gradient-to-r from-transparent to-transparent opacity-50 ${palette.accent}`}
+        />
+
         <button
           type="button"
           onClick={() => !loading && onCancel?.()}
           disabled={loading}
-          className="absolute right-4 top-4 rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 disabled:opacity-50"
+          className="absolute right-md top-md rounded p-1 text-on-surface-variant transition-colors hover:bg-surface-variant hover:text-primary disabled:opacity-40"
           aria-label="Fermer"
         >
-          <X size={18} />
+          <Icon name="close" size={18} />
         </button>
 
-        <div className="flex gap-4">
+        <div className="flex gap-md pt-xs">
           <span
-            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${palette.iconWrapper}`}
+            className={`flex h-11 w-11 shrink-0 items-center justify-center rounded border ${palette.iconWrapper}`}
           >
-            <AlertTriangle size={20} />
+            <Icon name="warning" size={20} />
           </span>
-          <div className="min-w-0 flex-1 pr-6">
-            <h2
-              id="confirm-dialog-title"
-              className="text-lg font-semibold leading-snug text-primary"
-            >
+          <div className="min-w-0 flex-1 pr-md">
+            <h2 id="confirm-dialog-title" className="font-headline-sm text-headline-sm text-primary">
               {title}
             </h2>
-            {description && (
-              <p className="mt-2 text-sm leading-relaxed text-slate-600">{description}</p>
-            )}
+            {description && <p className="mt-sm text-on-surface-variant">{description}</p>}
             {details && (
-              <p className="mt-3 rounded-xl bg-surface px-3 py-2 text-xs leading-relaxed text-slate-500">
+              <p className="mt-sm rounded border border-outline-variant/30 bg-surface-container-lowest px-sm py-base font-data-mono text-[12px] leading-relaxed text-on-surface-variant">
                 {details}
               </p>
             )}
           </div>
         </div>
 
-        <div className="mt-6 flex flex-wrap justify-end gap-2">
-          <button
-            type="button"
-            onClick={() => onCancel?.()}
-            disabled={loading}
-            className="btn-ghost"
-          >
+        <div className="mt-md flex flex-wrap justify-end gap-sm">
+          <button type="button" onClick={() => onCancel?.()} disabled={loading} className="btn-ghost">
             {cancelLabel}
           </button>
           <button
@@ -122,7 +118,7 @@ export default function ConfirmDialog({
             ref={confirmRef}
             onClick={() => onConfirm?.()}
             disabled={loading}
-            className={`inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-medium disabled:opacity-50 ${palette.confirmButton}`}
+            className={palette.confirmButton}
           >
             {loading ? loadingLabel || "Traitement..." : confirmLabel}
           </button>

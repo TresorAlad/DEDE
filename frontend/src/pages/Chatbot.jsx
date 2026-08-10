@@ -1,10 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { Send } from "lucide-react";
 import AppShell from "../components/AppShell";
-import PageHeader from "../components/PageHeader";
 import ChatMessage from "../components/ChatMessage";
+import Icon from "../components/Icon";
+import PageHeader from "../components/PageHeader";
 import { api } from "../api/client";
+
+const SUGGESTIONS = [
+  "Quel est le risque le plus urgent ?",
+  "Comment corriger les en-têtes de sécurité manquants ?",
+  "Résume l'audit en cinq points.",
+];
 
 export default function Chatbot() {
   const { auditId } = useParams();
@@ -66,60 +72,108 @@ export default function Chatbot() {
 
   return (
     <AppShell>
-      <Link to={`/reports/${auditId}`} className="mb-3 inline-block text-sm text-accent hover:underline">
-        &larr; Retour au rapport
-      </Link>
+      <div className="col-span-12">
+        <Link
+          to={`/reports/${auditId}`}
+          className="inline-flex items-center gap-xs font-label-caps text-label-caps uppercase text-on-surface-variant transition-colors hover:text-primary"
+        >
+          <Icon name="arrow_back" size={16} />
+          Retour au rapport
+        </Link>
+      </div>
+
       <PageHeader
-        title="Assistant conversationnel"
-        subtitle={`Posez vos questions sur l'audit #${auditId}. Les réponses s'appuient sur vos résultats.`}
+        title="Assistant ƉEƉE"
+        subtitle={`Analyse conversationnelle de l'audit AUD-${String(auditId).padStart(4, "0")}.`}
+        actions={
+          <div className="chip border-primary-container/30 bg-primary-container/10 text-primary-container">
+            <Icon name="neurology" size={16} />
+            Contexte d'audit chargé
+          </div>
+        }
       />
 
-      <div className="card flex h-[calc(100vh-12rem)] min-h-[28rem] flex-col p-0 overflow-hidden">
-        <div className="flex-1 space-y-3 overflow-y-auto px-5 py-5">
-          {!messages.length && !loading && (
-            <div className="rounded-2xl bg-surface px-4 py-3 text-sm text-slate-500">
-              Exemple : « Quel est le risque le plus urgent ? »
+      <div className="col-span-12">
+        <div className="flex h-[calc(100vh-19rem)] min-h-[26rem] flex-col overflow-hidden rounded-lg border border-outline-variant/50 bg-surface-container-lowest">
+          <div className="flex items-center justify-between border-b border-outline-variant/30 px-md py-sm">
+            <h2 className="flex items-center gap-base font-label-caps text-label-caps uppercase text-primary">
+              <Icon name="terminal" size={16} />
+              Console d'analyse
+            </h2>
+            <div className="flex gap-base">
+              <span className="h-2 w-2 rounded-pill bg-error" />
+              <span className="h-2 w-2 rounded-pill bg-outline" />
+              <span className="h-2 w-2 rounded-pill bg-primary-container" />
             </div>
-          )}
-          {messages.map((m, i) => (
-            <ChatMessage key={i} role={m.role} content={m.content} />
-          ))}
-          {loading && (
-            <div className="max-w-xs rounded-2xl bg-surface px-4 py-3 text-sm text-slate-500">
-              Analyse en cours...
-            </div>
-          )}
-          {error && (
-            <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-              {error}
-            </div>
-          )}
-          <div ref={bottomRef} />
-        </div>
-
-        <form
-          onSubmit={handleSend}
-          className="border-t border-slate-100 bg-white px-4 py-4"
-        >
-          <div className="flex items-center gap-3 rounded-full border border-slate-200 bg-surface px-2 py-1.5 shadow-sm focus-within:border-accent focus-within:ring-2 focus-within:ring-accent/15">
-            <input
-              ref={inputRef}
-              className="min-w-0 flex-1 border-0 bg-transparent px-3 py-2.5 text-sm outline-none placeholder:text-slate-400"
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-              placeholder="Votre question..."
-              disabled={loading}
-            />
-            <button
-              type="submit"
-              disabled={loading || !question.trim()}
-              className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full bg-primary px-4 text-sm font-medium text-white disabled:opacity-50"
-            >
-              <Send size={16} />
-              {loading ? "..." : "Envoyer"}
-            </button>
           </div>
-        </form>
+
+          <div className="flex-1 space-y-sm overflow-y-auto p-md">
+            {!messages.length && !loading && (
+              <div className="space-y-sm">
+                <p className="font-data-mono text-data-mono text-on-surface-variant">
+                  Posez une question sur cet audit. Les réponses s'appuient sur vos résultats réels.
+                </p>
+                <div className="flex flex-wrap gap-base">
+                  {SUGGESTIONS.map((suggestion) => (
+                    <button
+                      key={suggestion}
+                      type="button"
+                      onClick={() => sendQuestion(suggestion)}
+                      className="rounded border border-outline-variant/50 bg-surface-container px-sm py-base text-left font-data-mono text-[12px] text-on-surface-variant transition-colors hover:border-primary-container hover:text-primary-container"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {messages.map((m, i) => (
+              <ChatMessage key={i} role={m.role} content={m.content} />
+            ))}
+
+            {loading && (
+              <div className="flex max-w-xs items-center gap-base rounded border border-outline-variant/30 bg-surface-container-low px-md py-sm font-data-mono text-data-mono text-primary-container">
+                <Icon name="progress_activity" size={16} className="animate-spin" />
+                Analyse en cours...
+              </div>
+            )}
+
+            {error && (
+              <div className="flex items-start gap-base rounded border border-critical/30 bg-critical/10 px-md py-sm font-data-mono text-data-mono text-critical">
+                <Icon name="error" size={16} />
+                {error}
+              </div>
+            )}
+
+            <div ref={bottomRef} />
+          </div>
+
+          <form
+            onSubmit={handleSend}
+            className="border-t border-outline-variant/30 bg-surface-container-low px-md py-sm"
+          >
+            <div className="flex items-center gap-sm">
+              <div className="relative flex-1">
+                <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-sm">
+                  <Icon name="chevron_right" size={18} className="text-primary-container" />
+                </span>
+                <input
+                  ref={inputRef}
+                  className="input-field pl-xl"
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  placeholder="Votre question..."
+                  disabled={loading}
+                />
+              </div>
+              <button type="submit" disabled={loading || !question.trim()} className="btn-primary">
+                <Icon name="send" size={16} />
+                {loading ? "..." : "Envoyer"}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </AppShell>
   );

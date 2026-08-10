@@ -1,17 +1,15 @@
 import Sidebar from "./Sidebar";
+import TopBar from "./TopBar";
 
-export default function AppShell({ children, wide = false }) {
+export default function AppShell({ children }) {
   return (
-    <div className="relative min-h-screen bg-surface">
-      {/* Bandeau fixe pour éviter tout trou blanc sous la sidebar */}
-      <div className="pointer-events-none fixed top-0 left-0 z-30 h-screen w-64 bg-primary" aria-hidden="true" />
+    <div className="h-screen w-screen overflow-hidden bg-background text-on-background">
       <Sidebar />
-      <main
-        className={`relative z-10 ml-64 min-h-screen overflow-x-hidden px-6 py-7 md:px-8 animate-fade-in ${
-          wide ? "max-w-none" : ""
-        }`}
-      >
-        {children}
+      <TopBar />
+      <main className="ml-64 mt-16 h-[calc(100vh-4rem)] overflow-y-auto overflow-x-hidden p-gutter">
+        <div className="mx-auto grid max-w-[1600px] grid-cols-12 gap-gutter animate-fade-in">
+          {children}
+        </div>
       </main>
     </div>
   );

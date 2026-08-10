@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api, setToken } from "../api/client";
+import AuthLayout from "../components/AuthLayout";
+import Icon from "../components/Icon";
 import PasswordInput from "../components/PasswordInput";
 
 export default function Signup() {
@@ -14,6 +16,7 @@ export default function Signup() {
     accepted_terms: false,
   });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   function updateField(field, value) {
     setForm({ ...form, [field]: value });
@@ -32,6 +35,7 @@ export default function Signup() {
       return;
     }
 
+    setLoading(true);
     try {
       const { password_confirm, ...payload } = form;
       const data = await api("/auth/signup", {
@@ -42,120 +46,155 @@ export default function Signup() {
       navigate("/dashboard");
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
-    <div className="flex min-h-screen bg-surface">
-      <div className="hidden w-1/2 flex-col justify-between bg-primary p-10 text-white lg:flex">
-        <div>
-          <p className="text-3xl font-bold tracking-wide">ƉEƉE</p>
-          <p className="mt-2 text-white/70">Audit cybersécurité intelligent</p>
-        </div>
-        <div>
-          <h2 className="text-3xl font-semibold leading-tight">
-            Créez votre espace.<br />Sécurisez vos plateformes.
-          </h2>
-          <p className="mt-4 max-w-md text-sm text-white/70">
-            Un compte pour ajouter vos domaines, lancer des audits automatisés et dialoguer avec l'assistant IA.
+    <AuthLayout
+      subtitle="Moteur cybersécurité // Création d'accès"
+      footer={
+        <p className="font-body-md text-on-surface-variant">
+          Déjà inscrit ?
+          <Link
+            to="/login"
+            className="ml-2 border-b border-primary-container/30 font-data-mono text-data-mono text-primary-container transition-colors hover:border-primary hover:text-primary"
+          >
+            Se connecter
+          </Link>
+        </p>
+      }
+    >
+      <form onSubmit={handleSubmit} className="space-y-md">
+        {error && (
+          <p className="flex items-start gap-base rounded border border-critical/30 bg-critical/10 px-sm py-base font-data-mono text-[12px] leading-5 text-critical">
+            <Icon name="error" size={16} />
+            {error}
           </p>
-        </div>
-        <p className="text-xs text-white/50">Hackathon - Mission IA pour la cyberdéfense</p>
-      </div>
+        )}
 
-      <div className="flex w-full items-center justify-center px-4 py-10 lg:w-1/2">
-        <form onSubmit={handleSubmit} className="w-full max-w-md rounded-card bg-white p-8 shadow-card">
-          <h1 className="text-2xl font-bold text-primary">Créer un compte</h1>
-          {error && <p className="mt-4 text-sm text-danger">{error}</p>}
-
-          <label className="mt-4 block text-sm text-slate-600">
-            Nom de l'organisation
+        <div>
+          <label className="field-label" htmlFor="organization">
+            Organisation
+          </label>
+          <div className="relative">
+            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-sm">
+              <Icon name="corporate_fare" size={18} className="text-outline" />
+            </span>
             <input
-              className="input-field"
+              id="organization"
               type="text"
+              required
               value={form.organization_name}
               onChange={(e) => updateField("organization_name", e.target.value)}
-              required
+              placeholder="Nom de votre structure"
+              className="input-field pl-xl"
             />
-          </label>
+          </div>
+        </div>
 
-          <label className="mt-4 block text-sm text-slate-600">
+        <div>
+          <label className="field-label" htmlFor="fullname">
             Nom et prénom
+          </label>
+          <div className="relative">
+            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-sm">
+              <Icon name="person" size={18} className="text-outline" />
+            </span>
             <input
-              className="input-field"
+              id="fullname"
               type="text"
+              required
               value={form.full_name}
               onChange={(e) => updateField("full_name", e.target.value)}
-              required
+              placeholder="Kossi Amevor"
+              className="input-field pl-xl"
             />
-          </label>
+          </div>
+        </div>
 
-          <label className="mt-4 block text-sm text-slate-600">
-            Email
+        <div>
+          <label className="field-label" htmlFor="email">
+            Adresse e-mail
+          </label>
+          <div className="relative">
+            <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-sm">
+              <Icon name="mail" size={18} className="text-outline" />
+            </span>
             <input
-              className="input-field"
+              id="email"
               type="email"
+              required
               value={form.email}
               onChange={(e) => updateField("email", e.target.value)}
-              required
+              placeholder="operateur@domaine.tg"
+              className="input-field pl-xl"
             />
-          </label>
+          </div>
+        </div>
 
-          <label className="mt-4 block text-sm text-slate-600">
+        <div>
+          <label className="field-label" htmlFor="password">
             Mot de passe
-            <PasswordInput
-              value={form.password}
-              onChange={(e) => updateField("password", e.target.value)}
-              minLength={8}
-              required
-            />
           </label>
+          <PasswordInput
+            value={form.password}
+            onChange={(e) => updateField("password", e.target.value)}
+            minLength={8}
+            required
+          />
+        </div>
 
-          <label className="mt-4 block text-sm text-slate-600">
-            Confirmer le mot de passe
-            <PasswordInput
-              value={form.password_confirm}
-              onChange={(e) => updateField("password_confirm", e.target.value)}
-              minLength={8}
-              required
-            />
+        <div>
+          <label className="field-label" htmlFor="password-confirm">
+            Confirmation du mot de passe
           </label>
+          <PasswordInput
+            value={form.password_confirm}
+            onChange={(e) => updateField("password_confirm", e.target.value)}
+            minLength={8}
+            required
+          />
+        </div>
 
-          <label className="mt-4 flex items-start gap-3 text-sm text-slate-600">
-            <input
-              className="mt-1 h-4 w-4 accent-accent"
-              type="checkbox"
-              checked={form.accepted_terms}
-              onChange={(e) => updateField("accepted_terms", e.target.checked)}
-              required
-            />
-            <span>
-              J'accepte les{" "}
-              <Link className="text-accent underline" to="/cgu" target="_blank">
-                CGU
-              </Link>{" "}
-              et la{" "}
-              <Link className="text-accent underline" to="/confidentialite" target="_blank">
-                politique de confidentialité
-              </Link>
-              . Je certifie être autorisé à auditer les plateformes que j'ajouterai.
-            </span>
-          </label>
-
-          <button
-            type="submit"
-            className="btn-primary mt-6 w-full"
-          >
-            Créer mon compte
-          </button>
-          <p className="mt-4 text-sm text-slate-500">
-            Déjà inscrit ?{" "}
-            <Link className="text-accent hover:underline" to="/login">
-              Se connecter
+        <div className="flex items-start gap-sm pt-sm">
+          <input
+            id="terms"
+            type="checkbox"
+            required
+            checked={form.accepted_terms}
+            onChange={(e) => updateField("accepted_terms", e.target.checked)}
+            className="mt-1 h-4 w-4 shrink-0 rounded border-outline-variant bg-surface-container-highest accent-primary-container"
+          />
+          <label htmlFor="terms" className="text-[14px] leading-5 text-on-surface-variant">
+            J'accepte les{" "}
+            <Link
+              to="/cgu"
+              target="_blank"
+              className="text-primary-container underline decoration-primary-container/30 underline-offset-4 transition-colors hover:text-primary"
+            >
+              CGU
+            </Link>{" "}
+            et la{" "}
+            <Link
+              to="/confidentialite"
+              target="_blank"
+              className="text-primary-container underline decoration-primary-container/30 underline-offset-4 transition-colors hover:text-primary"
+            >
+              politique de confidentialité
             </Link>
-          </p>
-        </form>
-      </div>
-    </div>
+            . Je certifie être autorisé à auditer les plateformes que j'ajouterai.
+          </label>
+        </div>
+
+        <div className="pt-sm">
+          <button type="submit" disabled={loading} className="btn-primary w-full">
+            {loading ? "Création en cours..." : "Créer mon compte"}
+            <Icon name="arrow_forward" size={18} />
+          </button>
+        </div>
+      </form>
+    </AuthLayout>
   );
 }
