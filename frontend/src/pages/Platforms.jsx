@@ -7,6 +7,7 @@ import PageHeader from "../components/PageHeader";
 import StatusBadge from "../components/StatusBadge";
 import { CardSkeleton } from "../components/Skeleton";
 import { api } from "../api/client";
+import { useAuthUser } from "../hooks/useAuthUser";
 import { scoreTone } from "../themeColors";
 
 function normalizeDomain(value) {
@@ -38,6 +39,8 @@ function scoreColor(score) {
 }
 
 export default function Platforms() {
+  const { user } = useAuthUser();
+  const canBypass = Boolean(user?.can_bypass_ownership_verification);
   const [platforms, setPlatforms] = useState([]);
   const [audits, setAudits] = useState([]);
   const [error, setError] = useState("");
@@ -456,8 +459,20 @@ export default function Platforms() {
                       )}
                     </div>
 
-                    {verified ? (
-                      <div className="flex items-center gap-base">
+                    {verified || canBypass ? (
+                      <div className="flex flex-wrap items-center gap-base">
+                        {!verified && canBypass && (
+                          <button
+                            type="button"
+                            disabled={busy}
+                            onClick={() => verifyPlatform(platform.id)}
+                            className="btn-ghost px-sm py-base"
+                            title="Compte équipe : marque comme vérifiée sans fichier de preuve"
+                          >
+                            <Icon name="admin_panel_settings" size={16} />
+                            {busy ? "..." : "Contourner (équipe)"}
+                          </button>
+                        )}
                         <div className="relative">
                           <select
                             value={engineFor(platform.id)}

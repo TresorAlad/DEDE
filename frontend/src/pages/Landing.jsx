@@ -307,7 +307,7 @@ export default function Landing() {
         className="fixed inset-x-0 top-0 z-50 flex h-16 items-center justify-between border-b border-outline-variant/30 bg-surface/80 px-gutter backdrop-blur-md"
       >
         <div className="flex items-center gap-xs" data-reveal>
-          <Icon name="security" fill className="text-primary-container" />
+          <img src="/favicon.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />
           <span className="font-headline-sm text-headline-sm font-bold text-primary">ƉEƉE</span>
         </div>
 
@@ -657,7 +657,7 @@ export default function Landing() {
         <Reveal className="mx-auto grid max-w-7xl grid-cols-1 gap-lg md:grid-cols-4">
           <div data-reveal>
             <div className="mb-sm flex items-center gap-xs">
-              <Icon name="security" className="text-primary-container" />
+              <img src="/favicon.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />
               <span className="font-headline-sm text-headline-sm font-bold text-primary">ƉEƉE</span>
             </div>
             <p className="text-[14px] leading-5 text-on-surface-variant">

@@ -48,7 +48,13 @@ export default function Sidebar() {
     <nav className="fixed left-0 top-0 z-50 flex h-screen w-64 flex-col border-r border-outline-variant/30 bg-surface-container-low px-sm py-md">
       <div className="mb-xl flex items-center gap-sm px-sm">
         <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-outline-variant/30 bg-primary-container/10">
-          <Icon name="shield_lock" size={24} className="text-primary-container" />
+          <img
+            src="/favicon.png"
+            alt="ƉEƉE"
+            width={40}
+            height={40}
+            className="h-10 w-10 object-contain"
+          />
         </div>
         <div className="flex flex-col">
           <span

@@ -9,6 +9,7 @@ import Icon from "../components/Icon";
 import ScoreGauge from "../components/ScoreGauge";
 import StatusBadge from "../components/StatusBadge";
 import { api } from "../api/client";
+import { useAuthUser } from "../hooks/useAuthUser";
 
 const STEPS = [
   { key: "target", label: "Cible", icon: "add_link", caption: "Domaine à auditer" },
@@ -121,6 +122,8 @@ function StepBody({ title, subtitle, children, footer }) {
 }
 
 export default function Launch() {
+  const { user } = useAuthUser();
+  const canBypass = Boolean(user?.can_bypass_ownership_verification);
   const [step, setStep] = useState(0);
   const [platforms, setPlatforms] = useState([]);
   const [form, setForm] = useState({ name: "", domain: "" });
@@ -170,7 +173,7 @@ export default function Launch() {
       setPlatform(created);
       await loadPlatforms();
       setMessage(`Plateforme « ${created.name} » créée.`);
-      setStep(1);
+      setStep(canBypass ? 2 : 1);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -186,12 +189,22 @@ export default function Launch() {
     try {
       const updated = await api(`/platforms/${platform.id}/verify`, { method: "POST" });
       setPlatform(updated);
-      setMessage("Propriété vérifiée. Vous pouvez lancer l'audit.");
+      setMessage(
+        canBypass
+          ? "Compte équipe : vérification contournée. Vous pouvez lancer l'audit."
+          : "Propriété vérifiée. Vous pouvez lancer l'audit."
+      );
+      setStep(2);
     } catch (err) {
       setError(err.message);
     } finally {
       setBusy(false);
     }
+  }
+
+  async function continueAsTeam() {
+    if (!platform || !canBypass) return;
+    await verifyOwnership();
   }
 
   async function launchAudit() {
@@ -245,7 +258,11 @@ export default function Launch() {
     setPlatform(selected);
     setError("");
     setMessage("");
-    setStep(1);
+    if (selected.verification_status === "verified" || canBypass) {
+      setStep(2);
+    } else {
+      setStep(1);
+    }
   }
 
   return (
@@ -416,9 +433,15 @@ export default function Launch() {
                             <button
                               type="button"
                               onClick={() => chooseExisting(p)}
-                              disabled={!pVerified}
+                              disabled={!pVerified && !canBypass}
                               className="rounded border border-primary-container/40 px-sm py-base font-label-caps text-[10px] uppercase tracking-wider text-primary-container transition-colors hover:bg-primary-container hover:text-on-primary disabled:cursor-not-allowed disabled:opacity-40"
-                              title={pVerified ? "Utiliser cette plateforme" : "Vérifiez d'abord la propriété"}
+                              title={
+                                pVerified
+                                  ? "Utiliser cette plateforme"
+                                  : canBypass
+                                    ? "Compte équipe : démarrer sans preuve de propriété"
+                                    : "Vérifiez d'abord la propriété"
+                              }
                             >
                               Utiliser
                             </button>
@@ -458,15 +481,29 @@ export default function Launch() {
                 </div>
               ) : (
                 <div className="flex flex-wrap items-center justify-between gap-sm">
-                  <button
-                    type="button"
-                    onClick={verifyOwnership}
-                    disabled={busy}
-                    className="btn-primary"
-                  >
-                    <Icon name="verified_user" size={16} />
-                    {busy ? "Vérification..." : "Vérifier la propriété"}
-                  </button>
+                  <div className="flex flex-wrap gap-sm">
+                    <button
+                      type="button"
+                      onClick={verifyOwnership}
+                      disabled={busy}
+                      className="btn-primary"
+                    >
+                      <Icon name="verified_user" size={16} />
+                      {busy ? "Vérification..." : "Vérifier la propriété"}
+                    </button>
+                    {canBypass && (
+                      <button
+                        type="button"
+                        onClick={continueAsTeam}
+                        disabled={busy}
+                        className="btn-ghost"
+                        title="Réservé à l'équipe ƉEƉE"
+                      >
+                        <Icon name="admin_panel_settings" size={16} />
+                        Contourner (équipe)
+                      </button>
+                    )}
+                  </div>
                   <button
                     type="button"
                     onClick={() => setStep(0)}
@@ -513,9 +550,9 @@ export default function Launch() {
                 <div className="flex items-start gap-base rounded border border-primary-container/20 bg-primary-container/5 px-sm py-base">
                   <Icon name="info" size={16} className="mt-0.5 text-primary-container" />
                   <p className="text-[13px] leading-5 text-on-surface-variant">
-                    Aucun scan ne démarre tant que la propriété n'est pas confirmée.
-                    En environnement de démonstration, la vérification peut être
-                    automatique.
+                    {canBypass
+                      ? "Compte équipe : vous pouvez contourner la preuve de propriété pour un audit interne. Les utilisateurs standards doivent déposer le fichier de preuve."
+                      : "Aucun scan ne démarre tant que la propriété n'est pas confirmée."}
                   </p>
                 </div>
               </div>
