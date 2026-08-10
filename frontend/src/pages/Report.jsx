@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import AppShell from "../components/AppShell";
+import AgentActivity from "../components/AgentActivity";
+import AgentGraph from "../components/AgentGraph";
 import AuditProgress from "../components/AuditProgress";
 import CategoryBreakdown from "../components/CategoryBreakdown";
 import ConfirmDialog from "../components/ConfirmDialog";
@@ -184,7 +186,9 @@ export default function Report() {
         title={`Audit AUD-${String(auditId).padStart(4, "0")}`}
         subtitle={
           report
-            ? `Analyse de sécurité${report.risk_level ? ` - risque ${report.risk_level}` : ""}`
+            ? `Analyse de sécurité${report.risk_level ? ` - risque ${report.risk_level}` : ""} · ${
+                report.engine === "agents" ? "agents IA" : "scanners classiques"
+              }`
             : "Chargement du rapport..."
         }
         actions={
@@ -204,9 +208,13 @@ export default function Report() {
             <button
               type="button"
               onClick={handleReanalyze}
-              disabled={reanalyzing || !completed}
+              disabled={reanalyzing || !completed || report?.engine === "agents"}
               className="btn-ghost"
-              title="Régénère les recommandations sans relancer le scan"
+              title={
+                report?.engine === "agents"
+                  ? "L'analyse est produite par les agents IA"
+                  : "Régénère les recommandations sans relancer le scan"
+              }
             >
               <Icon name="refresh" size={16} className={reanalyzing ? "animate-spin" : ""} />
               {reanalyzing ? "Analyse..." : "Régénérer"}
@@ -272,6 +280,34 @@ export default function Report() {
               progress={report.progress}
             />
           </div>
+
+          {report.engine === "agents" && (
+            <Section
+              title="Orchestration des agents"
+              subtitle={
+                report.agent_graph?.agents?.length
+                  ? "Graphe d'orchestration de l'équipe d'agents IA — chaque nœud est un agent, chaque arête une délégation parent → enfant."
+                  : "Le graphe d'orchestration se construit pendant que les agents travaillent…"
+              }
+              icon="hub"
+            >
+              <AgentGraph
+                agents={report.agent_graph?.agents || []}
+                events={report.agent_graph?.events || []}
+                height={420}
+              />
+            </Section>
+          )}
+
+          {report.engine === "agents" && (report.agent_graph?.events || []).length > 0 && (
+            <Section
+              title="Activité des agents"
+              subtitle="Journal des messages et appels d'outils des agents IA"
+              icon="terminal"
+            >
+              <AgentActivity events={report.agent_graph.events} agents={report.agent_graph.agents} />
+            </Section>
+          )}
 
           {report.note && (
             <div className="col-span-12">

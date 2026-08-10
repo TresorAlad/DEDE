@@ -3,6 +3,7 @@ import Landing from "./pages/Landing";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
+import Launch from "./pages/Launch";
 import Platforms from "./pages/Platforms";
 import AddPlatform from "./pages/AddPlatform";
 import Reports from "./pages/Reports";
@@ -38,6 +39,14 @@ export default function App() {
         element={
           <PrivateRoute>
             <Dashboard />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/launch"
+        element={
+          <PrivateRoute>
+            <Launch />
           </PrivateRoute>
         }
       />

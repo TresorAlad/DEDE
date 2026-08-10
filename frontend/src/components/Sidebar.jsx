@@ -6,6 +6,7 @@ import { clearToken } from "../api/client";
 import { clearAuthUserCache, useAuthUser } from "../hooks/useAuthUser";
 
 const links = [
+  { to: "/launch", label: "Lancer un audit", icon: "play_arrow" },
   { to: "/dashboard", label: "Tableau de bord", icon: "dashboard" },
   { to: "/platforms", label: "Plateformes", icon: "inventory_2" },
   { to: "/reports", label: "Rapports", icon: "assessment" },
@@ -18,6 +19,9 @@ export default function Sidebar() {
   const [logoutOpen, setLogoutOpen] = useState(false);
 
   function isActive(path) {
+    if (path === "/launch") {
+      return location.pathname === "/launch";
+    }
     if (path === "/reports") {
       return location.pathname === "/reports" || location.pathname.startsWith("/reports/");
     }
@@ -81,10 +85,10 @@ export default function Sidebar() {
 
       <div className="mb-md">
         <Link
-          to="/platforms/new"
+          to="/launch"
           className="flex w-full items-center justify-center gap-sm rounded border border-primary px-md py-sm font-label-caps text-label-caps uppercase text-primary transition-colors duration-200 hover:bg-primary hover:text-on-primary"
         >
-          <Icon name="add" size={18} />
+          <Icon name="play_arrow" size={18} />
           Nouvel audit
         </Link>
       </div>

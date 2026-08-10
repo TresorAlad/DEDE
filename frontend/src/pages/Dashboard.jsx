@@ -91,19 +91,27 @@ export default function Dashboard() {
         title="Vue d'ensemble"
         subtitle="Posture de sécurité et état de vos plateformes en temps réel."
         actions={
-          <div
-            className={`chip ${
-              runningAudits.length
-                ? "border-primary-container/30 bg-primary-container/10 text-primary-container"
-                : "border-success/30 bg-success/10 text-success"
-            }`}
-          >
-            <Icon
-              name={runningAudits.length ? "radar" : "check_circle"}
-              size={16}
-              className="animate-pulse"
-            />
-            {runningAudits.length ? `${runningAudits.length} audit(s) en cours` : "Surveillance active"}
+          <div className="flex flex-wrap items-center gap-sm">
+            <div
+              className={`chip ${
+                runningAudits.length
+                  ? "border-primary-container/30 bg-primary-container/10 text-primary-container"
+                  : "border-success/30 bg-success/10 text-success"
+              }`}
+            >
+              <Icon
+                name={runningAudits.length ? "radar" : "check_circle"}
+                size={16}
+                className="animate-pulse"
+              />
+              {runningAudits.length
+                ? `${runningAudits.length} audit(s) en cours`
+                : "Surveillance active"}
+            </div>
+            <Link to="/launch" className="btn-primary px-sm py-base">
+              <Icon name="play_arrow" size={16} />
+              Lancer un audit
+            </Link>
           </div>
         }
       />

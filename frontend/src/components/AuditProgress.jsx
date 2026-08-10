@@ -24,6 +24,10 @@ const MODULE_META = {
   subdomains: { icon: "dns", caption: "Cartographie de la surface exposée" },
   scoring: { icon: "speed", caption: "Calcul du score" },
   analysis: { icon: "radar", caption: "Analyse en cours" },
+  // Moteur dede-agent (audit par agents IA)
+  orchestration: { icon: "hub", caption: "Répartition des tâches entre agents" },
+  agents: { icon: "neurology", caption: "Agents IA en orchestration" },
+  report: { icon: "assessment", caption: "Consolidation des résultats" },
 };
 
 const STATE_STYLE = {

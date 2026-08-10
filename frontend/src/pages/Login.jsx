@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { api, setToken } from "../api/client";
 import AuthLayout from "../components/AuthLayout";
@@ -17,7 +17,30 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [demoEnabled, setDemoEnabled] = useState(false);
   const reasonMessage = REASON_MESSAGES[searchParams.get("reason")] || "";
+
+  // Mode test : si le backend expose la connexion démo (ALLOW_DEV_AUTO_LOGIN=true),
+  // on affiche un bouton « Connexion démo » qui évite email/mot de passe.
+  useEffect(() => {
+    api("/auth/demo")
+      .then((data) => setDemoEnabled(Boolean(data?.enabled)))
+      .catch(() => setDemoEnabled(false));
+  }, []);
+
+  async function handleDemoLogin() {
+    setError("");
+    setLoading(true);
+    try {
+      const data = await api("/auth/demo-login", { method: "POST" });
+      setToken(data.access_token);
+      navigate("/launch");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function handleSubmit(event) {
     event.preventDefault();
@@ -29,7 +52,7 @@ export default function Login() {
         body: JSON.stringify({ email, password }),
       });
       setToken(data.access_token);
-      navigate("/dashboard");
+      navigate("/launch");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -111,6 +134,29 @@ export default function Login() {
             <Icon name="login" size={18} />
           </button>
         </div>
+
+        {demoEnabled && (
+          <>
+            <div className="flex items-center gap-base py-sm">
+              <span className="h-px flex-1 bg-outline-variant" />
+              <span className="font-data-mono text-[11px] text-on-surface-variant">
+                MODE TEST
+              </span>
+              <span className="h-px flex-1 bg-outline-variant" />
+            </div>
+            <div>
+              <button
+                type="button"
+                disabled={loading}
+                onClick={handleDemoLogin}
+                className="btn-ghost w-full"
+              >
+                {loading ? "Connexion en cours..." : "Connexion démo (mode test)"}
+                <Icon name="key" size={18} />
+              </button>
+            </div>
+          </>
+        )}
       </form>
     </AuthLayout>
   );

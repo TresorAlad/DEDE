@@ -1,6 +1,7 @@
 import { animate, onScroll, utils } from "animejs";
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
+import AgentTeamShowcase from "../components/AgentTeamShowcase";
 import AnimatedText from "../components/AnimatedText";
 import Icon from "../components/Icon";
 import Reveal from "../components/Reveal";
@@ -10,17 +11,45 @@ import { DURATION, EASE, prefersReducedMotion } from "../motion";
 import { getToken } from "../api/client";
 
 const HERO_HIGHLIGHTS = [
+  { icon: "hub", label: "Équipe d'agents dédiée à votre cible" },
   { icon: "verified_user", label: "Propriété vérifiée avant tout scan" },
-  { icon: "schedule", label: "Résultats en quelques minutes" },
   { icon: "neurology", label: "Priorisation assistée par IA" },
   { icon: "description", label: "Rapport exportable en PDF" },
+];
+
+const AGENT_ROLES = [
+  {
+    icon: "hub",
+    title: "Orchestrateur",
+    text: "Il découpe la mission en tâches, affecte chaque spécialiste, récupère les résultats et consolide le tout sans intervention humaine.",
+  },
+  {
+    icon: "dns",
+    title: "Reconnaissance",
+    text: "Cartographie la surface exposée : sous-domaines, services publiés, environnements oubliés. C'est ce que voit un attaquant.",
+  },
+  {
+    icon: "radar",
+    title: "Scanner",
+    text: "Interroge chaque cible découverte : vulnérabilités connues, configurations à risque, failles récentes de la base de signatures.",
+  },
+  {
+    icon: "lock",
+    title: "TLS & en-têtes",
+    text: "Contrôle la solidité du chiffrement, la validité des certificats et la présence des en-têtes de sécurité HTTP.",
+  },
+  {
+    icon: "neurology",
+    title: "Analyste IA",
+    text: "Traduit les constats techniques en langage clair, élimine le bruit et classe les risques par urgence d'action.",
+  },
 ];
 
 const STEPS = [
   {
     icon: "add_link",
     title: "Déclarez votre domaine",
-    text: "Renseignez le domaine et l'adresse à surveiller. Aucune installation, aucun agent à déployer.",
+    text: "Renseignez le domaine et l'adresse à surveiller. Aucune installation, aucun agent à déployer de votre côté.",
   },
   {
     icon: "key",
@@ -29,8 +58,8 @@ const STEPS = [
   },
   {
     icon: "play_arrow",
-    title: "Lancez l'audit",
-    text: "Le moteur enchaîne ses modules d'analyse et vous suivez chaque étape en direct dans la console.",
+    title: "Lancez l'équipe d'agents",
+    text: "L'orchestrateur répartit les tâches entre les agents spécialisés. Suivez chaque agent en direct dans le graphe d'exécution.",
   },
   {
     icon: "assessment",
@@ -82,9 +111,14 @@ const COMMITMENTS = [
 
 const FAQ = [
   {
+    question: "Qu'est-ce qu'un audit mené par des agents ?",
+    answer:
+      "Au lieu d'enchaîner des outils préprogrammés, le moteur constitue une petite équipe d'agents : un orchestrateur distribue les tâches, des agents spécialisés exécutent la reconnaissance et les scans, un analyste IA consolide. Chaque agent rend compte de son travail, ce qui rend l'exécution transparente.",
+  },
+  {
     question: "Faut-il installer un logiciel ou un agent ?",
     answer:
-      "Non. Tout se pilote depuis le navigateur. Vous déclarez un domaine, vous prouvez qu'il vous appartient, et l'analyse est menée depuis notre infrastructure.",
+      "Non. Tout se pilote depuis le navigateur. Vous déclarez un domaine, vous prouvez qu'il vous appartient, et l'équipe d'agents est déployée depuis notre infrastructure.",
   },
   {
     question: "Puis-je auditer n'importe quel site ?",
@@ -94,23 +128,19 @@ const FAQ = [
   {
     question: "Combien de temps dure un audit ?",
     answer:
-      "Quelques minutes dans la majorité des cas. La durée dépend surtout de l'étendue de votre surface exposée. La progression s'affiche étape par étape pendant l'exécution.",
+      "Quelques minutes dans la majorité des cas. La durée dépend surtout de l'étendue de votre surface exposée. Le graphe d'orchestration affiche la progression de chaque agent pendant l'exécution.",
   },
   {
     question: "L'analyse risque-t-elle de perturber mon site ?",
     answer:
       "Les contrôles sont menés de manière mesurée et non destructive. L'objectif est d'observer votre exposition telle qu'un attaquant la verrait, sans dégrader votre service.",
   },
-  {
-    question: "Que deviennent mes résultats ?",
-    answer:
-      "Ils sont conservés dans votre espace et ne sont accessibles qu'à votre compte. Le détail des traitements figure dans notre politique de confidentialité.",
-  },
 ];
 
 const PLAN_FEATURES = [
   "Cartographie illimitée de la surface exposée",
   "Audits à la demande sur vos domaines vérifiés",
+  "Équipe d'agents orchestrée, suivi en direct",
   "Analyse et priorisation par l'IA",
   "Rapports PDF et assistant conversationnel",
 ];
@@ -119,7 +149,7 @@ const FOOTER_LINKS = [
   {
     title: "Produit",
     links: [
-      { label: "Capacités", to: "#capacites", hash: true },
+      { label: "L'équipe d'agents", to: "#agents", hash: true },
       { label: "Démarche", to: "#demarche", hash: true },
       { label: "Offre", to: "#offre", hash: true },
       { label: "Questions fréquentes", to: "#faq", hash: true },
@@ -142,7 +172,7 @@ const FOOTER_LINKS = [
 ];
 
 const NAV_LINKS = [
-  { label: "Capacités", href: "#capacites" },
+  { label: "Agents", href: "#agents" },
   { label: "Démarche", href: "#demarche" },
   { label: "Offre", href: "#offre" },
   { label: "FAQ", href: "#faq" },
@@ -267,7 +297,7 @@ export default function Landing() {
   }, [hash]);
 
   const primaryCta = authenticated
-    ? { to: "/dashboard", label: "Ouvrir la console" }
+    ? { to: "/launch", label: "Lancer un audit" }
     : { to: "/signup", label: "Lancer un premier audit" };
 
   return (
@@ -304,186 +334,147 @@ export default function Landing() {
             </Link>
           )}
           <Link
-            to={authenticated ? "/dashboard" : "/login"}
+            to={authenticated ? "/launch" : "/login"}
             className="rounded border border-primary-container px-sm py-xs text-primary-container transition-all duration-200 hover:bg-primary-container hover:text-on-primary"
           >
-            {authenticated ? "Ouvrir la console" : "Connexion"}
+            {authenticated ? "Lancer un audit" : "Connexion"}
           </Link>
         </div>
       </Reveal>
 
       <main className="flex-grow pt-16">
-        {/* Hero */}
+        {/* Hero : le paradigme agents au premier plan */}
         <section
           ref={heroRef}
-          className="relative flex min-h-[760px] items-center justify-center overflow-hidden px-gutter py-xl"
+          className="relative flex min-h-[820px] items-center overflow-hidden px-gutter py-xl"
         >
           <div ref={heroGridRef} className="tech-grid absolute inset-0 z-0" />
           <div className="absolute inset-0 z-0 bg-gradient-to-b from-transparent to-background/90" />
 
-          <Reveal
-            delay={120}
-            className="relative z-10 mx-auto flex max-w-5xl flex-col items-center gap-lg text-center"
-          >
-            <div
-              className="inline-flex items-center gap-xs rounded-pill border border-primary-container/30 bg-surface-variant/50 px-sm py-xs font-label-caps text-label-caps uppercase text-primary-container"
-              data-reveal
-            >
-              <span className="h-2 w-2 animate-pulse rounded-pill bg-primary-container" />
-              Système en ligne
-            </div>
-
-            <AnimatedText
-              as="h1"
-              delay={260}
-              className="max-w-3xl font-display-lg text-display-lg text-primary"
-            >
-              L'audit de cybersécurité automatisé pour les équipes modernes
-            </AnimatedText>
-
-            <p
-              className="max-w-2xl font-body-lg text-body-lg text-on-surface-variant"
-              data-reveal
-            >
-              Découvrez ce que votre organisation expose sur Internet, mesurez le risque associé et
-              obtenez un plan de correction lisible. Sans expertise préalable, sans installation.
-            </p>
-
-            <div className="mt-md flex flex-col gap-sm sm:flex-row" data-reveal>
-              <Link
-                to={primaryCta.to}
-                className="outer-glow-accent rounded border border-primary-container bg-primary-container/10 px-lg py-sm font-bold text-primary-container transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary-container hover:text-on-primary"
+          <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-lg lg:grid-cols-2">
+            <Reveal className="flex flex-col items-start gap-lg text-left">
+              <div
+                className="inline-flex items-center gap-xs rounded-pill border border-primary-container/30 bg-surface-variant/50 px-sm py-xs font-label-caps text-label-caps uppercase text-primary-container"
+                data-reveal
               >
-                {primaryCta.label}
-              </Link>
-              <a
-                href="#demarche"
-                className="rounded border border-outline-variant px-lg py-sm text-on-surface transition-all duration-300 hover:-translate-y-0.5 hover:bg-surface-variant"
-              >
-                Comprendre la démarche
-              </a>
-            </div>
+                <span className="h-2 w-2 animate-pulse rounded-pill bg-primary-container" />
+                Une équipe d'agents, pas un simple scanner
+              </div>
 
-            <div className="mt-lg grid w-full grid-cols-1 gap-sm border-t border-outline-variant/30 pt-lg sm:grid-cols-2 lg:grid-cols-4">
-              {HERO_HIGHLIGHTS.map((item) => (
-                <div
-                  key={item.label}
-                  className="flex items-center justify-center gap-sm text-left text-on-surface-variant"
-                  data-reveal
+              <AnimatedText
+                as="h1"
+                delay={200}
+                className="max-w-2xl font-display-lg text-display-lg text-primary"
+              >
+                L'audit cybersécurité orchestré par des agents IA
+              </AnimatedText>
+
+              <p
+                className="max-w-xl font-body-lg text-body-lg text-on-surface-variant"
+                data-reveal
+              >
+                Un orchestrateur déploie des agents spécialisés contre votre
+                surface exposée, mesure le risque et livre un plan de correction
+                lisible. Vous suivez chaque agent en direct.
+              </p>
+
+              <div className="mt-md flex flex-col gap-sm sm:flex-row" data-reveal>
+                <Link
+                  to={primaryCta.to}
+                  className="outer-glow-accent rounded border border-primary-container bg-primary-container/10 px-lg py-sm font-bold text-primary-container transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary-container hover:text-on-primary"
                 >
-                  <Icon name={item.icon} size={18} className="text-primary-container" />
-                  <span className="font-label-caps text-label-caps uppercase">{item.label}</span>
-                </div>
-              ))}
-            </div>
-          </Reveal>
+                  {primaryCta.label}
+                </Link>
+                <a
+                  href="#agents"
+                  className="rounded border border-outline-variant px-lg py-sm text-on-surface transition-all duration-300 hover:-translate-y-0.5 hover:bg-surface-variant"
+                >
+                  Voir l'équipe en action
+                </a>
+              </div>
+
+              <div className="mt-lg grid w-full grid-cols-1 gap-sm border-t border-outline-variant/30 pt-lg sm:grid-cols-2">
+                {HERO_HIGHLIGHTS.map((item) => (
+                  <div
+                    key={item.label}
+                    className="flex items-center gap-sm text-left text-on-surface-variant"
+                    data-reveal
+                  >
+                    <Icon name={item.icon} size={18} className="text-primary-container" />
+                    <span className="font-label-caps text-label-caps uppercase">{item.label}</span>
+                  </div>
+                ))}
+              </div>
+            </Reveal>
+
+            <Reveal delay={180} className="relative">
+              <div className="pointer-events-none absolute -inset-6 z-0 rounded-3xl bg-primary-container/10 blur-3xl" />
+              <div className="relative z-10" data-reveal>
+                <AgentTeamShowcase />
+              </div>
+            </Reveal>
+          </div>
         </section>
 
-        {/* Capacités */}
-        <section id="capacites" className="scroll-mt-16 bg-surface-container-lowest px-gutter py-xl">
+        {/* L'équipe d'agents */}
+        <section id="agents" className="scroll-mt-16 bg-surface-container-lowest px-gutter py-xl">
           <Reveal className="mx-auto max-w-7xl">
             <SectionHeading
-              eyebrow="Capacités"
-              title="Une chaîne de sécurité complète"
-              subtitle="De la découverte de vos actifs exposés jusqu'au plan de correction, sans rupture."
+              eyebrow="Le paradigme"
+              title="Une équipe d'agents, chacun son métier"
+              subtitle="L'orchestrateur pilote, les spécialistes exécutent, l'analyste consolide. Chaque étape est visible et auditable."
             />
 
-            <div className="grid grid-cols-1 gap-md md:grid-cols-12">
-              <div
-                className="group relative overflow-hidden rounded-lg border border-outline-variant/30 bg-surface-container-low p-md md:col-span-8"
-                data-reveal
-              >
-                <div className="absolute right-0 top-0 -z-10 h-32 w-32 rounded-bl-full bg-primary-container/5 transition-colors group-hover:bg-primary-container/10" />
-                <div className="mb-md flex items-center gap-sm border-b border-outline-variant/30 pb-sm">
-                  <Icon name="explore" className="text-primary-container" />
-                  <h3 className="font-headline-sm text-headline-sm text-primary">
-                    Cartographie de la surface exposée
-                  </h3>
-                </div>
-                <p className="mb-md text-on-surface-variant">
-                  Sous-domaines oubliés, environnements de test laissés en ligne, services publiés
-                  sans que personne ne s'en souvienne : le moteur reconstitue ce que voit un
-                  attaquant depuis l'extérieur, avant qu'il ne s'en serve.
-                </p>
-                <div className="rounded border border-outline-variant/50 bg-surface p-sm font-data-mono text-data-mono text-secondary-fixed-dim">
-                  <AnimatedText as="p" mode="type">
-                    &gt; audit --domaine exemple.tg
-                  </AnimatedText>
-                  <p>
-                    [+] <span ref={assetCountRef}>142</span> actifs exposés identifiés
-                  </p>
-                  <p>
-                    [+] Corrélation des enregistrements en cours
-                    <span className="animate-pulse">...</span>
-                  </p>
-                </div>
-              </div>
-
-              <div
-                className="relative flex flex-col overflow-hidden rounded-lg border border-outline-variant/30 bg-surface-container-low p-md md:col-span-4"
-                data-reveal
-              >
-                <div className="mb-md flex items-center gap-sm border-b border-outline-variant/30 pb-sm">
-                  <Icon name="psychology" className="text-tertiary-fixed-dim" />
-                  <h3 className="font-headline-sm text-headline-sm text-primary">
-                    Analyse assistée par IA
-                  </h3>
-                </div>
-                <p className="text-on-surface-variant">
-                  Le bruit est écarté, les constats sont traduits en langage clair et classés par
-                  urgence. Vous savez par quoi commencer lundi matin.
-                </p>
-                <div className="mt-auto pt-sm">
-                  <span className="inline-block rounded border border-tertiary-container/20 bg-tertiary-container/10 px-xs py-[2px] font-label-caps text-label-caps uppercase text-tertiary-fixed-dim">
-                    Priorisation automatique
-                  </span>
-                </div>
-              </div>
-
-              <div
-                className="rounded-lg border border-outline-variant/30 bg-surface-container-low p-md md:col-span-12"
-                data-reveal
-              >
-                <div className="mb-md flex items-center gap-sm border-b border-outline-variant/30 pb-sm">
-                  <Icon name="radar" className="text-error-container" />
-                  <h3 className="font-headline-sm text-headline-sm text-primary">
-                    Détection des vulnérabilités et des mauvaises configurations
-                  </h3>
-                </div>
-
-                <div className="grid items-center gap-lg md:grid-cols-2">
-                  <div>
-                    <p className="mb-md text-on-surface-variant">
-                      Le moteur recherche les failles connues et les erreurs de paramétrage les plus
-                      exploitées, puis contrôle la solidité de votre chiffrement et de vos en-têtes
-                      de sécurité. La base de signatures est tenue à jour en continu.
-                    </p>
-                    <ul className="space-y-sm">
-                      {[
-                        "Vulnérabilités connues et configurations à risque",
-                        "Qualité du chiffrement TLS et validité des certificats",
-                        "En-têtes de sécurité HTTP manquants ou permissifs",
-                      ].map((item) => (
-                        <li key={item} className="flex items-start gap-sm">
-                          <Icon
-                            name="check"
-                            size={16}
-                            className="mt-1 shrink-0 text-primary-container"
-                          />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
+            <div className="grid grid-cols-1 gap-md md:grid-cols-2 lg:grid-cols-3">
+              {AGENT_ROLES.map((role, index) => (
+                <div
+                  key={role.title}
+                  className="relative flex flex-col rounded-lg border border-outline-variant/30 bg-surface-container-low p-md transition-all duration-200 hover:-translate-y-1 hover:border-primary-container/40"
+                  data-reveal
+                >
+                  <div className="mb-sm flex items-center justify-between">
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded border border-primary-container/30 bg-primary-container/10 text-primary-container">
+                      <Icon name={role.icon} size={20} />
+                    </span>
+                    <span className="font-display-lg text-[28px] leading-none text-outline-variant/40">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
                   </div>
+                  <h3 className="mb-xs font-headline-sm text-primary" style={{ fontSize: "18px" }}>
+                    {role.title}
+                  </h3>
+                  <p className="text-[14px] leading-6 text-on-surface-variant">{role.text}</p>
+                </div>
+              ))}
 
-                  <div className="relative flex h-48 items-center justify-center overflow-hidden rounded border border-outline-variant/50 bg-surface">
-                    <div className="tech-grid absolute inset-0 opacity-30" />
-                    <div className="relative z-10 flex h-24 w-24 items-center justify-center rounded-pill border-2 border-error/20">
-                      <div className="flex h-20 w-20 items-center justify-center rounded-pill border-2 border-error/40 animate-[spin_4s_linear_infinite]">
-                        <div className="h-16 w-16 rounded-pill border-2 border-error/60 border-t-error animate-[spin_2s_linear_infinite]" />
-                      </div>
-                      <Icon name="warning" className="absolute text-error" />
-                    </div>
+              <div
+                className="relative flex flex-col justify-center overflow-hidden rounded-lg border border-primary-container/40 bg-surface-container-low p-md"
+                data-reveal
+              >
+                <div className="tech-grid absolute inset-0 opacity-40" />
+                <div className="relative z-10">
+                  <div className="mb-sm flex items-center gap-sm">
+                    <Icon name="assessment" className="text-primary-container" />
+                    <h3 className="font-headline-sm text-primary" style={{ fontSize: "18px" }}>
+                      Rapport consolidé
+                    </h3>
+                  </div>
+                  <p className="text-[14px] leading-6 text-on-surface-variant">
+                    Chaque agent rend compte de son travail : le rapport final n'est
+                    pas une boîte noire, mais la synthèse d'une exécution que vous
+                    avez suivie pas à pas.
+                  </p>
+                  <div className="mt-sm rounded border border-outline-variant/50 bg-surface p-sm font-data-mono text-data-mono text-secondary-fixed-dim">
+                    <AnimatedText as="p" mode="type">
+                      &gt; audit --domaine exemple.tg --agents
+                    </AnimatedText>
+                    <p>
+                      [+] <span ref={assetCountRef}>142</span> actifs exposés identifiés
+                    </p>
+                    <p>
+                      [+] Corrélation des résultats par l'orchestrateur
+                      <span className="animate-pulse">...</span>
+                    </p>
                   </div>
                 </div>
               </div>
@@ -619,7 +610,7 @@ export default function Landing() {
                 to={primaryCta.to}
                 className="block w-full rounded border border-primary-container bg-primary-container/10 py-sm font-bold text-primary-container transition-colors hover:bg-primary-container hover:text-on-primary"
               >
-                {authenticated ? "Ouvrir la console" : "Commencer"}
+                {authenticated ? "Lancer un audit" : "Commencer"}
               </Link>
             </div>
           </Reveal>
@@ -644,11 +635,11 @@ export default function Landing() {
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-surface-container-low/80" />
             <Reveal className="relative z-10 flex flex-col items-center gap-sm">
               <AnimatedText className="font-headline-md text-headline-md text-primary">
-                Vous ne pouvez pas protéger ce que vous ne voyez pas
+                Votre équipe d'agents n'attend qu'un domaine
               </AnimatedText>
               <p className="max-w-2xl text-on-surface-variant" data-reveal>
-                Lancez un premier audit sur votre domaine et découvrez votre exposition réelle en
-                quelques minutes.
+                Lancez un premier audit et regardez les agents travailler en direct
+                sur votre surface exposée.
               </p>
               <Link
                 to={primaryCta.to}
@@ -670,7 +661,8 @@ export default function Landing() {
               <span className="font-headline-sm text-headline-sm font-bold text-primary">ƉEƉE</span>
             </div>
             <p className="text-[14px] leading-5 text-on-surface-variant">
-              Moteur d'audit de cybersécurité automatisé pour les équipes techniques.
+              Audits de cybersécurité orchestrés par une équipe d'agents IA pour les
+              équipes techniques.
             </p>
           </div>
 

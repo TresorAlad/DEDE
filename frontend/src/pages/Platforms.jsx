@@ -49,6 +49,26 @@ export default function Platforms() {
   const [urlTouched, setUrlTouched] = useState(false);
   const [platformToDelete, setPlatformToDelete] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [engineChoice, setEngineChoice] = useState({});
+
+  const ENGINES = [
+    {
+      value: "scanners",
+      label: "Scanners classiques",
+      caption: "Amass · Nuclei · SSL · en-têtes",
+      icon: "radar",
+    },
+    {
+      value: "agents",
+      label: "Agents IA",
+      caption: "Équipe d'agents dede-agent",
+      icon: "neurology",
+    },
+  ];
+
+  function engineFor(platformId) {
+    return engineChoice[platformId] || "scanners";
+  }
 
   async function load() {
     const [p, a] = await Promise.all([api("/platforms"), api("/audits")]);
@@ -91,8 +111,15 @@ export default function Platforms() {
     setError("");
     setMessage("");
     try {
-      const audit = await api(`/audits/platform/${platformId}`, { method: "POST" });
-      setMessage(`Audit #${audit.id} mis en file d'attente.`);
+      const audit = await api(`/audits/platform/${platformId}`, {
+        method: "POST",
+        body: JSON.stringify({ engine: engineFor(platformId) }),
+      });
+      setMessage(
+        `Audit #${audit.id} mis en file d'attente (${
+          audit.engine === "agents" ? "agents IA" : "scanners classiques"
+        }).`
+      );
       await load();
     } catch (err) {
       setError(err.message);
@@ -430,15 +457,41 @@ export default function Platforms() {
                     </div>
 
                     {verified ? (
-                      <button
-                        type="button"
-                        disabled={busy}
-                        onClick={() => startAudit(platform.id)}
-                        className="btn-primary px-sm py-base"
-                      >
-                        <Icon name="play_arrow" size={16} />
-                        {busy ? "Lancement..." : "Lancer un audit"}
-                      </button>
+                      <div className="flex items-center gap-base">
+                        <div className="relative">
+                          <select
+                            value={engineFor(platform.id)}
+                            onChange={(e) =>
+                              setEngineChoice((prev) => ({
+                                ...prev,
+                                [platform.id]: e.target.value,
+                              }))
+                            }
+                            disabled={busy}
+                            aria-label="Moteur d'audit"
+                            className="h-8 appearance-none rounded border border-outline-variant bg-surface-container-lowest pl-base pr-lg font-data-mono text-[11px] text-on-surface-variant transition-colors hover:border-primary/50 focus:border-primary focus:outline-none disabled:opacity-40"
+                            title={ENGINES.find((e) => e.value === engineFor(platform.id))?.caption}
+                          >
+                            {ENGINES.map((engine) => (
+                              <option key={engine.value} value={engine.value}>
+                                {engine.label}
+                              </option>
+                            ))}
+                          </select>
+                          <span className="pointer-events-none absolute inset-y-0 right-base flex items-center">
+                            <Icon name="chevron_right" size={14} className="rotate-90 text-on-surface-variant" />
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          disabled={busy}
+                          onClick={() => startAudit(platform.id)}
+                          className="btn-primary px-sm py-base"
+                        >
+                          <Icon name="play_arrow" size={16} />
+                          {busy ? "Lancement..." : "Lancer un audit"}
+                        </button>
+                      </div>
                     ) : (
                       <button
                         type="button"
