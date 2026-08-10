@@ -1,8 +1,4 @@
-import { animate, stagger, utils } from "animejs";
-import { useLayoutEffect, useRef } from "react";
-
 import Icon from "./Icon";
-import { DURATION, EASE, STAGGER, onceVisible, prefersReducedMotion } from "../motion";
 import { scoreTone, themeColor } from "../themeColors";
 
 const DEFAULT_CATEGORIES = {
@@ -16,31 +12,6 @@ const DEFAULT_CATEGORIES = {
 export default function CategoryBreakdown({ categories = {}, title = "Répartition par catégorie" }) {
   const entries = Object.entries({ ...DEFAULT_CATEGORIES, ...categories });
   const evaluated = entries.filter(([, score]) => score !== null && score !== undefined);
-  const listRef = useRef(null);
-
-  // Les barres se remplissent de haut en bas au premier affichage. Les mises a
-  // jour suivantes restent gerees par la transition CSS de chaque barre.
-  useLayoutEffect(() => {
-    const list = listRef.current;
-    if (!list || prefersReducedMotion()) return undefined;
-
-    const bars = [...list.querySelectorAll("[data-bar]")].filter((bar) => !bar.dataset.filled);
-    if (!bars.length) return undefined;
-
-    bars.forEach((bar) => {
-      bar.dataset.filled = "true";
-    });
-    utils.set(bars, { width: 0 });
-
-    return onceVisible(list, () =>
-      animate(bars, {
-        width: (bar) => bar.dataset.bar,
-        duration: DURATION.slow,
-        ease: EASE.out,
-        delay: stagger(STAGGER),
-      })
-    );
-  });
 
   return (
     <div className="panel h-full">
@@ -53,7 +24,7 @@ export default function CategoryBreakdown({ categories = {}, title = "Répartiti
           </span>
         </div>
 
-        <ul className="space-y-md" ref={listRef}>
+        <ul className="space-y-md">
           {entries.map(([name, score]) => {
             const notEvaluated = score === null || score === undefined;
             const value = notEvaluated ? 0 : Math.max(0, Math.min(100, Number(score) || 0));
@@ -93,9 +64,8 @@ export default function CategoryBreakdown({ categories = {}, title = "Répartiti
                     <div className="h-full w-full bg-[repeating-linear-gradient(45deg,rgb(var(--color-surface-variant)),rgb(var(--color-surface-variant))_6px,rgb(var(--color-surface-container-high))_6px,rgb(var(--color-surface-container-high))_12px)]" />
                   ) : (
                     <div
-                      data-bar={`${value}%`}
-                      className="h-full rounded-pill transition-all duration-700"
-                      style={{ width: `${value}%`, backgroundColor: color }}
+                      className="bar-fill h-full rounded-pill"
+                      style={{ width: `${value}%`, "--bar-w": `${value}%`, backgroundColor: color }}
                     />
                   )}
                 </div>

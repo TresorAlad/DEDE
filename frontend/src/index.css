@@ -252,6 +252,22 @@ select {
   animation: scale-in 180ms cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Remplissage des barres de repartition : croissance de 0 jusqu'a la largeur
+   cible (--bar-w), en pourcentage pour rester fiable. Purement CSS, donc
+   insensible a StrictMode et sans risque de barre figee a zero. */
+@keyframes bar-fill {
+  from {
+    width: 0;
+  }
+  to {
+    width: var(--bar-w);
+  }
+}
+
+.bar-fill {
+  animation: bar-fill 700ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
 @layer components {
   .tech-grid {
     background-size: 40px 40px;
