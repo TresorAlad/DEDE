@@ -1,18 +1,16 @@
 import Icon from "./Icon";
 import StatusBadge from "./StatusBadge";
+import { themeColor } from "../themeColors";
 
-const SEVERITY_STRIP = {
-  critical: "#f43f5e",
-  critique: "#f43f5e",
-  high: "#f59e0b",
-  haute: "#f59e0b",
-  élevée: "#f59e0b",
-  medium: "#f59e0b",
-  moyenne: "#f59e0b",
-  low: "#5ffbd6",
-  basse: "#5ffbd6",
-  faible: "#5ffbd6",
-};
+function severityStrip(severity) {
+  const key = String(severity || "").toLowerCase();
+  if (["critical", "critique"].includes(key)) return themeColor("critical");
+  if (["high", "haute", "élevée", "elevee", "medium", "moyenne"].includes(key)) {
+    return themeColor("warning");
+  }
+  if (["low", "basse", "faible", "info"].includes(key)) return themeColor("surface-tint");
+  return themeColor("outline-variant");
+}
 
 export default function RiskList({ items = [] }) {
   if (!items.length) {
@@ -29,7 +27,7 @@ export default function RiskList({ items = [] }) {
       {items.map((item, index) => {
         const command = item.fix_command || item.commande;
         const severity = (item.severity || "info").toLowerCase();
-        const strip = SEVERITY_STRIP[severity] || "#3c4a45";
+        const strip = severityStrip(severity);
 
         return (
           <li key={index} className="panel">

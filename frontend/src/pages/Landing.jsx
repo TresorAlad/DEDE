@@ -1,6 +1,12 @@
-import { useEffect } from "react";
+import { animate, onScroll, utils } from "animejs";
+import { useEffect, useLayoutEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
+import AnimatedText from "../components/AnimatedText";
 import Icon from "../components/Icon";
+import Reveal from "../components/Reveal";
+import ThemeToggle from "../components/ThemeToggle";
+import useCountUp from "../hooks/useCountUp";
+import { DURATION, EASE, prefersReducedMotion } from "../motion";
 import { getToken } from "../api/client";
 
 const HERO_HIGHLIGHTS = [
@@ -145,24 +151,119 @@ const NAV_LINKS = [
 function SectionHeading({ eyebrow, title, subtitle }) {
   return (
     <div className="mb-xl text-center">
-      <span className="chip mb-sm border-outline-variant/40 bg-surface-variant/40 text-on-surface-variant">
+      <span
+        className="chip mb-sm border-outline-variant/40 bg-surface-variant/40 text-on-surface-variant"
+        data-reveal
+      >
         {eyebrow}
       </span>
-      <h2 className="mb-sm font-headline-md text-headline-md text-primary">{title}</h2>
-      {subtitle && <p className="mx-auto max-w-2xl text-on-surface-variant">{subtitle}</p>}
+      <AnimatedText className="mb-sm font-headline-md text-headline-md text-primary">
+        {title}
+      </AnimatedText>
+      {subtitle && (
+        <p className="mx-auto max-w-2xl text-on-surface-variant" data-reveal>
+          {subtitle}
+        </p>
+      )}
     </div>
+  );
+}
+
+/**
+ * Question dépliable dont la réponse glisse au lieu d'apparaître d'un bloc.
+ *
+ * L'élément `details` reste la source de vérité pour l'accessibilité ; la
+ * fermeture est simplement différée le temps de l'animation.
+ */
+function FaqItem({ question, answer }) {
+  const detailsRef = useRef(null);
+  const panelRef = useRef(null);
+
+  const handleToggle = (event) => {
+    const details = detailsRef.current;
+    const panel = panelRef.current;
+    if (!details || !panel || prefersReducedMotion()) return;
+
+    event.preventDefault();
+
+    if (details.open) {
+      animate(panel, {
+        height: [panel.scrollHeight, 0],
+        opacity: [1, 0],
+        duration: DURATION.base,
+        ease: EASE.inOut,
+        onComplete: () => {
+          details.open = false;
+          utils.set(panel, { height: "auto", opacity: 1 });
+        },
+      });
+      return;
+    }
+
+    details.open = true;
+    animate(panel, {
+      height: [0, panel.scrollHeight],
+      opacity: [0, 1],
+      duration: DURATION.base,
+      ease: EASE.out,
+      onComplete: () => utils.set(panel, { height: "auto" }),
+    });
+  };
+
+  return (
+    <details
+      ref={detailsRef}
+      data-reveal
+      className="group rounded-lg border border-outline-variant/30 bg-surface-container-low px-md py-sm"
+    >
+      <summary
+        onClick={handleToggle}
+        className="flex cursor-pointer list-none items-center justify-between gap-sm py-xs font-headline-sm text-primary marker:content-none"
+      >
+        <span style={{ fontSize: "18px" }}>{question}</span>
+        <Icon
+          name="chevron_right"
+          className="shrink-0 text-on-surface-variant transition-transform duration-300 group-open:rotate-90"
+        />
+      </summary>
+      <div ref={panelRef} className="overflow-hidden">
+        <p className="pb-sm pt-xs text-on-surface-variant">{answer}</p>
+      </div>
+    </details>
   );
 }
 
 export default function Landing() {
   const authenticated = Boolean(getToken());
   const { hash } = useLocation();
+  const assetCountRef = useCountUp(142);
+  const heroRef = useRef(null);
+  const heroGridRef = useRef(null);
+
+  // La trame du hero derive moins vite que le contenu : le defilement gagne en
+  // profondeur sans que le texte ne se decale de sa grille de lecture.
+  useLayoutEffect(() => {
+    const grid = heroGridRef.current;
+    const hero = heroRef.current;
+    if (!grid || !hero || prefersReducedMotion()) return undefined;
+
+    const parallax = animate(grid, {
+      y: [0, 180],
+      scale: [1, 1.12],
+      ease: "linear",
+      autoplay: onScroll({ target: hero, sync: true }),
+    });
+
+    return () => parallax.revert();
+  }, []);
 
   // Le navigateur ne peut pas cibler l'ancre : la section n'existe pas encore
   // au moment ou l'URL est lue par le routeur.
   useEffect(() => {
     if (!hash) return;
-    document.querySelector(hash)?.scrollIntoView({ behavior: "smooth" });
+    document.querySelector(hash)?.scrollIntoView({
+      behavior: prefersReducedMotion() ? "auto" : "smooth",
+    });
   }, [hash]);
 
   const primaryCta = authenticated
@@ -171,13 +272,16 @@ export default function Landing() {
 
   return (
     <div className="flex min-h-screen flex-col bg-background font-body-md text-on-background antialiased">
-      <header className="fixed inset-x-0 top-0 z-50 flex h-16 items-center justify-between border-b border-outline-variant/30 bg-surface/80 px-gutter backdrop-blur-md">
-        <div className="flex items-center gap-xs">
+      <Reveal
+        as="header"
+        className="fixed inset-x-0 top-0 z-50 flex h-16 items-center justify-between border-b border-outline-variant/30 bg-surface/80 px-gutter backdrop-blur-md"
+      >
+        <div className="flex items-center gap-xs" data-reveal>
           <Icon name="security" fill className="text-primary-container" />
           <span className="font-headline-sm text-headline-sm font-bold text-primary">ƉEƉE</span>
         </div>
 
-        <nav className="hidden gap-md lg:flex">
+        <nav className="hidden gap-md lg:flex" data-reveal>
           {NAV_LINKS.map((link) => (
             <a
               key={link.href}
@@ -189,7 +293,8 @@ export default function Landing() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-sm">
+        <div className="flex items-center gap-sm" data-reveal>
+          <ThemeToggle />
           {!authenticated && (
             <Link
               to="/signup"
@@ -200,43 +305,60 @@ export default function Landing() {
           )}
           <Link
             to={authenticated ? "/dashboard" : "/login"}
-            className="rounded border border-primary-container px-sm py-xs text-primary-container transition-all duration-200 hover:bg-primary-container hover:text-surface"
+            className="rounded border border-primary-container px-sm py-xs text-primary-container transition-all duration-200 hover:bg-primary-container hover:text-on-primary"
           >
             {authenticated ? "Ouvrir la console" : "Connexion"}
           </Link>
         </div>
-      </header>
+      </Reveal>
 
       <main className="flex-grow pt-16">
         {/* Hero */}
-        <section className="tech-grid relative flex min-h-[760px] items-center justify-center overflow-hidden px-gutter py-xl">
+        <section
+          ref={heroRef}
+          className="relative flex min-h-[760px] items-center justify-center overflow-hidden px-gutter py-xl"
+        >
+          <div ref={heroGridRef} className="tech-grid absolute inset-0 z-0" />
           <div className="absolute inset-0 z-0 bg-gradient-to-b from-transparent to-background/90" />
 
-          <div className="relative z-10 mx-auto flex max-w-5xl flex-col items-center gap-lg text-center">
-            <div className="inline-flex items-center gap-xs rounded-pill border border-primary-container/30 bg-surface-variant/50 px-sm py-xs font-label-caps text-label-caps uppercase text-primary-container">
+          <Reveal
+            delay={120}
+            className="relative z-10 mx-auto flex max-w-5xl flex-col items-center gap-lg text-center"
+          >
+            <div
+              className="inline-flex items-center gap-xs rounded-pill border border-primary-container/30 bg-surface-variant/50 px-sm py-xs font-label-caps text-label-caps uppercase text-primary-container"
+              data-reveal
+            >
               <span className="h-2 w-2 animate-pulse rounded-pill bg-primary-container" />
               Système en ligne
             </div>
 
-            <h1 className="max-w-3xl font-display-lg text-display-lg text-primary">
+            <AnimatedText
+              as="h1"
+              delay={260}
+              className="max-w-3xl font-display-lg text-display-lg text-primary"
+            >
               L'audit de cybersécurité automatisé pour les équipes modernes
-            </h1>
+            </AnimatedText>
 
-            <p className="max-w-2xl font-body-lg text-body-lg text-on-surface-variant">
+            <p
+              className="max-w-2xl font-body-lg text-body-lg text-on-surface-variant"
+              data-reveal
+            >
               Découvrez ce que votre organisation expose sur Internet, mesurez le risque associé et
               obtenez un plan de correction lisible. Sans expertise préalable, sans installation.
             </p>
 
-            <div className="mt-md flex flex-col gap-sm sm:flex-row">
+            <div className="mt-md flex flex-col gap-sm sm:flex-row" data-reveal>
               <Link
                 to={primaryCta.to}
-                className="rounded border border-primary-container bg-primary-container/10 px-lg py-sm font-bold text-primary-container shadow-[0_0_15px_rgba(95,251,214,0.2)] transition-all duration-300 hover:bg-primary-container hover:text-surface"
+                className="outer-glow-accent rounded border border-primary-container bg-primary-container/10 px-lg py-sm font-bold text-primary-container transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary-container hover:text-on-primary"
               >
                 {primaryCta.label}
               </Link>
               <a
                 href="#demarche"
-                className="rounded border border-outline-variant px-lg py-sm text-on-surface transition-all duration-300 hover:bg-surface-variant"
+                className="rounded border border-outline-variant px-lg py-sm text-on-surface transition-all duration-300 hover:-translate-y-0.5 hover:bg-surface-variant"
               >
                 Comprendre la démarche
               </a>
@@ -247,18 +369,19 @@ export default function Landing() {
                 <div
                   key={item.label}
                   className="flex items-center justify-center gap-sm text-left text-on-surface-variant"
+                  data-reveal
                 >
                   <Icon name={item.icon} size={18} className="text-primary-container" />
                   <span className="font-label-caps text-label-caps uppercase">{item.label}</span>
                 </div>
               ))}
             </div>
-          </div>
+          </Reveal>
         </section>
 
         {/* Capacités */}
         <section id="capacites" className="scroll-mt-16 bg-surface-container-lowest px-gutter py-xl">
-          <div className="mx-auto max-w-7xl">
+          <Reveal className="mx-auto max-w-7xl">
             <SectionHeading
               eyebrow="Capacités"
               title="Une chaîne de sécurité complète"
@@ -266,7 +389,10 @@ export default function Landing() {
             />
 
             <div className="grid grid-cols-1 gap-md md:grid-cols-12">
-              <div className="group relative overflow-hidden rounded-lg border border-outline-variant/30 bg-surface-container-low p-md md:col-span-8">
+              <div
+                className="group relative overflow-hidden rounded-lg border border-outline-variant/30 bg-surface-container-low p-md md:col-span-8"
+                data-reveal
+              >
                 <div className="absolute right-0 top-0 -z-10 h-32 w-32 rounded-bl-full bg-primary-container/5 transition-colors group-hover:bg-primary-container/10" />
                 <div className="mb-md flex items-center gap-sm border-b border-outline-variant/30 pb-sm">
                   <Icon name="explore" className="text-primary-container" />
@@ -280,15 +406,23 @@ export default function Landing() {
                   attaquant depuis l'extérieur, avant qu'il ne s'en serve.
                 </p>
                 <div className="rounded border border-outline-variant/50 bg-surface p-sm font-data-mono text-data-mono text-secondary-fixed-dim">
-                  &gt; audit --domaine exemple.tg
-                  <br />
-                  [+] 142 actifs exposés identifiés
-                  <br />
-                  [+] Corrélation des enregistrements en cours...
+                  <AnimatedText as="p" mode="type">
+                    &gt; audit --domaine exemple.tg
+                  </AnimatedText>
+                  <p>
+                    [+] <span ref={assetCountRef}>142</span> actifs exposés identifiés
+                  </p>
+                  <p>
+                    [+] Corrélation des enregistrements en cours
+                    <span className="animate-pulse">...</span>
+                  </p>
                 </div>
               </div>
 
-              <div className="relative flex flex-col overflow-hidden rounded-lg border border-outline-variant/30 bg-surface-container-low p-md md:col-span-4">
+              <div
+                className="relative flex flex-col overflow-hidden rounded-lg border border-outline-variant/30 bg-surface-container-low p-md md:col-span-4"
+                data-reveal
+              >
                 <div className="mb-md flex items-center gap-sm border-b border-outline-variant/30 pb-sm">
                   <Icon name="psychology" className="text-tertiary-fixed-dim" />
                   <h3 className="font-headline-sm text-headline-sm text-primary">
@@ -306,7 +440,10 @@ export default function Landing() {
                 </div>
               </div>
 
-              <div className="rounded-lg border border-outline-variant/30 bg-surface-container-low p-md md:col-span-12">
+              <div
+                className="rounded-lg border border-outline-variant/30 bg-surface-container-low p-md md:col-span-12"
+                data-reveal
+              >
                 <div className="mb-md flex items-center gap-sm border-b border-outline-variant/30 pb-sm">
                   <Icon name="radar" className="text-error-container" />
                   <h3 className="font-headline-sm text-headline-sm text-primary">
@@ -351,12 +488,12 @@ export default function Landing() {
                 </div>
               </div>
             </div>
-          </div>
+          </Reveal>
         </section>
 
         {/* Démarche */}
         <section id="demarche" className="scroll-mt-16 bg-surface px-gutter py-xl">
-          <div className="mx-auto max-w-7xl">
+          <Reveal className="mx-auto max-w-7xl">
             <SectionHeading
               eyebrow="Démarche"
               title="Quatre étapes, du domaine au plan d'action"
@@ -367,7 +504,8 @@ export default function Landing() {
               {STEPS.map((step, index) => (
                 <div
                   key={step.title}
-                  className="relative flex flex-col rounded-lg border border-outline-variant/30 bg-surface-container-low p-md"
+                  className="relative flex flex-col rounded-lg border border-outline-variant/30 bg-surface-container-low p-md transition-colors hover:border-primary-container/40"
+                  data-reveal
                 >
                   <span className="absolute right-md top-md font-display-lg text-[40px] leading-none text-outline-variant/30">
                     {String(index + 1).padStart(2, "0")}
@@ -382,12 +520,12 @@ export default function Landing() {
                 </div>
               ))}
             </div>
-          </div>
+          </Reveal>
         </section>
 
         {/* Contenu du rapport */}
         <section className="bg-surface-container-lowest px-gutter py-xl">
-          <div className="mx-auto max-w-7xl">
+          <Reveal className="mx-auto max-w-7xl">
             <SectionHeading
               eyebrow="Livrable"
               title="Ce que vous recevez à la fin d'un audit"
@@ -398,7 +536,8 @@ export default function Landing() {
               {REPORT_CONTENT.map((item) => (
                 <div
                   key={item.title}
-                  className="flex gap-md rounded-lg border border-outline-variant/30 bg-surface-container-low p-md"
+                  className="flex gap-md rounded-lg border border-outline-variant/30 bg-surface-container-low p-md transition-colors hover:border-primary-container/40"
+                  data-reveal
                 >
                   <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded border border-primary-container/30 bg-primary-container/10 text-primary-container">
                     <Icon name={item.icon} size={20} />
@@ -412,12 +551,12 @@ export default function Landing() {
                 </div>
               ))}
             </div>
-          </div>
+          </Reveal>
         </section>
 
         {/* Engagements */}
         <section className="bg-surface px-gutter py-xl">
-          <div className="mx-auto max-w-7xl">
+          <Reveal className="mx-auto max-w-7xl">
             <SectionHeading
               eyebrow="Engagements"
               title="Un audit encadré, jamais subi"
@@ -428,7 +567,8 @@ export default function Landing() {
               {COMMITMENTS.map((item) => (
                 <div
                   key={item.title}
-                  className="rounded-lg border border-outline-variant/30 bg-surface-container-low p-md"
+                  className="rounded-lg border border-outline-variant/30 bg-surface-container-low p-md transition-colors hover:border-primary-container/40"
+                  data-reveal
                 >
                   <span className="mb-sm inline-flex h-10 w-10 items-center justify-center rounded border border-primary-container/30 bg-primary-container/10 text-primary-container">
                     <Icon name={item.icon} size={20} />
@@ -440,19 +580,22 @@ export default function Landing() {
                 </div>
               ))}
             </div>
-          </div>
+          </Reveal>
         </section>
 
         {/* Offre */}
         <section id="offre" className="scroll-mt-16 bg-surface-container-lowest px-gutter py-xl">
-          <div className="mx-auto max-w-4xl text-center">
+          <Reveal className="mx-auto max-w-4xl text-center">
             <SectionHeading
               eyebrow="Offre"
               title="Une offre simple pour les PME"
               subtitle="Tout ce qu'il faut pour sécuriser votre infrastructure, sans complexité."
             />
 
-            <div className="relative mx-auto max-w-md rounded-lg border border-primary-container/50 bg-surface-container-low p-lg shadow-[0_0_15px_rgba(95,251,214,0.2)]">
+            <div
+              className="outer-glow-accent relative mx-auto max-w-md rounded-lg border border-primary-container/50 bg-surface-container-low p-lg"
+              data-reveal
+            >
               <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded bg-primary-container px-sm py-xs font-label-caps text-label-caps uppercase text-surface">
                 Recommandé
               </div>
@@ -474,65 +617,54 @@ export default function Landing() {
 
               <Link
                 to={primaryCta.to}
-                className="block w-full rounded border border-primary-container bg-primary-container/10 py-sm font-bold text-primary-container transition-colors hover:bg-primary-container hover:text-surface"
+                className="block w-full rounded border border-primary-container bg-primary-container/10 py-sm font-bold text-primary-container transition-colors hover:bg-primary-container hover:text-on-primary"
               >
                 {authenticated ? "Ouvrir la console" : "Commencer"}
               </Link>
             </div>
-          </div>
+          </Reveal>
         </section>
 
         {/* FAQ */}
         <section id="faq" className="scroll-mt-16 bg-surface px-gutter py-xl">
-          <div className="mx-auto max-w-3xl">
+          <Reveal className="mx-auto max-w-3xl">
             <SectionHeading eyebrow="FAQ" title="Questions fréquentes" />
 
             <div className="space-y-sm">
               {FAQ.map((item) => (
-                <details
-                  key={item.question}
-                  className="group rounded-lg border border-outline-variant/30 bg-surface-container-low px-md py-sm"
-                >
-                  <summary className="flex cursor-pointer list-none items-center justify-between gap-sm py-xs font-headline-sm text-primary marker:content-none">
-                    <span style={{ fontSize: "18px" }}>{item.question}</span>
-                    <Icon
-                      name="chevron_right"
-                      className="shrink-0 text-on-surface-variant transition-transform group-open:rotate-90"
-                    />
-                  </summary>
-                  <p className="pb-sm pt-xs text-on-surface-variant">{item.answer}</p>
-                </details>
+                <FaqItem key={item.question} question={item.question} answer={item.answer} />
               ))}
             </div>
-          </div>
+          </Reveal>
         </section>
 
         {/* Appel final */}
         <section className="px-gutter pb-xl">
           <div className="tech-grid relative mx-auto max-w-5xl overflow-hidden rounded-lg border border-primary-container/30 bg-surface-container-low px-md py-lg text-center">
             <div className="absolute inset-0 bg-gradient-to-b from-transparent to-surface-container-low/80" />
-            <div className="relative z-10 flex flex-col items-center gap-sm">
-              <h2 className="font-headline-md text-headline-md text-primary">
+            <Reveal className="relative z-10 flex flex-col items-center gap-sm">
+              <AnimatedText className="font-headline-md text-headline-md text-primary">
                 Vous ne pouvez pas protéger ce que vous ne voyez pas
-              </h2>
-              <p className="max-w-2xl text-on-surface-variant">
+              </AnimatedText>
+              <p className="max-w-2xl text-on-surface-variant" data-reveal>
                 Lancez un premier audit sur votre domaine et découvrez votre exposition réelle en
                 quelques minutes.
               </p>
               <Link
                 to={primaryCta.to}
-                className="mt-sm rounded border border-primary-container bg-primary-container/10 px-lg py-sm font-bold text-primary-container transition-all duration-300 hover:bg-primary-container hover:text-surface"
+                className="mt-sm rounded border border-primary-container bg-primary-container/10 px-lg py-sm font-bold text-primary-container transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary-container hover:text-on-primary"
+                data-reveal
               >
                 {primaryCta.label}
               </Link>
-            </div>
+            </Reveal>
           </div>
         </section>
       </main>
 
       <footer className="border-t border-outline-variant/30 bg-surface-container-lowest px-gutter py-lg">
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-lg md:grid-cols-4">
-          <div>
+        <Reveal className="mx-auto grid max-w-7xl grid-cols-1 gap-lg md:grid-cols-4">
+          <div data-reveal>
             <div className="mb-sm flex items-center gap-xs">
               <Icon name="security" className="text-primary-container" />
               <span className="font-headline-sm text-headline-sm font-bold text-primary">ƉEƉE</span>
@@ -543,7 +675,7 @@ export default function Landing() {
           </div>
 
           {FOOTER_LINKS.map((column) => (
-            <div key={column.title}>
+            <div key={column.title} data-reveal>
               <h4 className="mb-sm font-label-caps text-label-caps uppercase text-primary">
                 {column.title}
               </h4>
@@ -570,7 +702,7 @@ export default function Landing() {
               </ul>
             </div>
           ))}
-        </div>
+        </Reveal>
 
         <div className="mx-auto mt-lg max-w-7xl border-t border-outline-variant/30 pt-sm text-center text-[14px] text-on-surface-variant">
           © 2026 ƉEƉE. Sécurisé dès la conception.

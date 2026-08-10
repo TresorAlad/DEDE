@@ -11,6 +11,7 @@ const STYLES = {
   queued: NEUTRAL,
   running: ACCENT,
   completed: SUCCESS,
+  cancelled: NEUTRAL,
   failed: CRITICAL,
   critical: CRITICAL,
   high: WARNING,
@@ -39,6 +40,7 @@ const LABELS = {
   queued: "En file",
   running: "En cours",
   completed: "Terminé",
+  cancelled: "Annulé",
   failed: "Échoué",
 };
 

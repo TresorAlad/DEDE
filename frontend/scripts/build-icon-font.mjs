@@ -6,6 +6,7 @@
  *
  *   npm run icons
  */
+import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -111,6 +112,11 @@ async function main() {
   await fs.mkdir(path.dirname(CSS_FILE), { recursive: true });
   await fs.writeFile(path.join(FONT_DIR, FONT_FILE), font);
 
+  // Le nom du fichier ne change pas d'une generation a l'autre : sans empreinte
+  // dans l'URL, le navigateur garde en cache un sous-ensemble perime et affiche
+  // les icones recemment ajoutees en toutes lettres.
+  const version = createHash("sha256").update(font).digest("hex").slice(0, 8);
+
   await fs.writeFile(
     CSS_FILE,
     `/* Genere par scripts/build-icon-font.mjs - ne pas modifier a la main.
@@ -121,7 +127,7 @@ async function main() {
   font-weight: 100 700;
   /* block : n'affiche jamais le nom de la ligature en clair. */
   font-display: block;
-  src: url("../assets/${FONT_FILE}") format("woff2");
+  src: url("../assets/${FONT_FILE}?v=${version}") format("woff2");
 }
 
 .material-symbols-outlined {

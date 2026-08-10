@@ -1,4 +1,10 @@
+import { animate, utils } from "animejs";
+import { useLayoutEffect, useRef } from "react";
+
 import Icon from "./Icon";
+import Reveal from "./Reveal";
+import { DURATION, EASE, prefersReducedMotion } from "../motion";
+import { themeColor } from "../themeColors";
 
 const CIRCUMFERENCE = 283;
 
@@ -72,8 +78,10 @@ export default function AuditProgress({
   progress = [],
 }) {
   const failed = status === "failed";
+  const cancelled = status === "cancelled";
   const completed = status === "completed";
   const running = status === "running";
+  const interrupted = failed || cancelled;
 
   let steps;
   if (Array.isArray(progress) && progress.length > 0) {
@@ -90,16 +98,16 @@ export default function AuditProgress({
       { key: "received", label: "Reçu", time: formatTime(createdAt), state: "done", detail: "" },
       {
         key: "analysis",
-        label: failed ? "Analyse interrompue" : "Analyse",
+        label: interrupted ? "Analyse interrompue" : "Analyse",
         time: formatTime(startedAt),
-        state: completed ? "done" : running ? "active" : failed ? "failed" : "pending",
+        state: completed ? "done" : running ? "active" : interrupted ? "failed" : "pending",
         detail: "",
       },
       {
         key: "done",
-        label: failed ? "Échec" : "Terminé",
+        label: cancelled ? "Annulé" : failed ? "Échec" : "Terminé",
         time: formatTime(finishedAt),
-        state: completed ? "done" : failed ? "failed" : "pending",
+        state: completed ? "done" : interrupted ? "failed" : "pending",
         detail: "",
       },
     ];
@@ -112,11 +120,40 @@ export default function AuditProgress({
   const doneCount = steps.filter((s) => s.state === "done").length;
   const percent = steps.length ? Math.round((doneCount / steps.length) * 100) : 0;
   const offset = CIRCUMFERENCE - (CIRCUMFERENCE * percent) / 100;
-  const ringColor = failed ? "#f43f5e" : "#5ffbd6";
+  const ringColor = interrupted ? themeColor("critical") : themeColor("surface-tint");
 
   const activeLabel =
     steps.find((s) => s.state === "active")?.label ||
-    (completed ? "Terminé" : failed ? "Échec" : running ? "En cours" : "En file");
+    (completed
+      ? "Terminé"
+      : cancelled
+        ? "Annulé"
+        : failed
+          ? "Échec"
+          : running
+            ? "En cours"
+            : "En file");
+
+  const ringRef = useRef(null);
+  const ringMounted = useRef(false);
+
+  // L'anneau progresse d'une etape a l'autre pendant que l'audit tourne : on
+  // anime depuis la valeur affichee, et depuis zero au tout premier rendu.
+  useLayoutEffect(() => {
+    const ring = ringRef.current;
+    if (!ring || prefersReducedMotion()) return;
+
+    if (!ringMounted.current) {
+      ringMounted.current = true;
+      utils.set(ring, { strokeDashoffset: CIRCUMFERENCE });
+    }
+
+    animate(ring, {
+      strokeDashoffset: offset,
+      duration: DURATION.figure,
+      ease: EASE.out,
+    });
+  }, [offset]);
 
   const logs = steps
     .filter((step) => step.time)
@@ -137,8 +174,17 @@ export default function AuditProgress({
 
         <div className="relative mb-lg flex h-64 w-64 items-center justify-center">
           <svg className="h-full w-full -rotate-90" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="45" fill="none" stroke="#2f3633" strokeWidth="2" />
             <circle
+              cx="50"
+              cy="50"
+              r="45"
+              fill="none"
+              stroke="currentColor"
+              className="text-outline-variant opacity-30"
+              strokeWidth="2"
+            />
+            <circle
+              ref={ringRef}
               cx="50"
               cy="50"
               r="45"
@@ -147,7 +193,6 @@ export default function AuditProgress({
               strokeWidth="2"
               strokeDasharray={CIRCUMFERENCE}
               strokeDashoffset={offset}
-              className="transition-all duration-1000 ease-out"
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -182,13 +227,14 @@ export default function AuditProgress({
         <h3 className="mb-md border-b border-outline-variant/30 pb-sm font-headline-sm text-headline-sm text-primary">
           Modules d'exécution
         </h3>
-        <div className="flex-1 space-y-md">
+        <Reveal className="flex-1 space-y-md">
           {steps.map((step, index) => {
             const style = STATE_STYLE[step.state] || STATE_STYLE.pending;
             const meta = MODULE_META[step.key] || { icon: "bolt", caption: step.detail || "Étape d'audit" };
             return (
               <div
                 key={step.key || index}
+                data-reveal
                 className={`relative flex items-center justify-between overflow-hidden rounded border p-sm ${style.wrapper}`}
               >
                 <span className={`absolute bottom-0 left-0 top-0 w-1 ${style.strip}`} />
@@ -215,7 +261,7 @@ export default function AuditProgress({
               </div>
             );
           })}
-        </div>
+        </Reveal>
       </div>
 
       <div className="col-span-12 flex h-64 flex-col overflow-hidden rounded-lg border border-outline-variant/50 bg-surface-container-lowest p-sm">
@@ -230,12 +276,12 @@ export default function AuditProgress({
             <span className="h-2 w-2 rounded-pill bg-primary-container" />
           </div>
         </div>
-        <div className="flex-1 space-y-1 overflow-y-auto p-2 font-data-mono text-[12px] leading-5">
+        <Reveal className="flex-1 space-y-1 overflow-y-auto p-2 font-data-mono text-[12px] leading-5">
           {logs.length === 0 && (
             <p className="text-on-surface-variant opacity-70">En attente du démarrage de l'audit...</p>
           )}
           {logs.map((log, index) => (
-            <div key={index} className="flex items-start gap-base">
+            <div key={index} data-reveal className="flex items-start gap-base">
               <span className="text-outline-variant">[{log.time}]</span>
               <span
                 className={
@@ -258,7 +304,7 @@ export default function AuditProgress({
               <span className="text-primary-container">_</span>
             </div>
           )}
-        </div>
+        </Reveal>
       </div>
     </div>
   );

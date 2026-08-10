@@ -1,13 +1,12 @@
+import { animate, utils } from "animejs";
+import { useLayoutEffect, useRef } from "react";
+
 import Icon from "./Icon";
+import useCountUp from "../hooks/useCountUp";
+import { DURATION, EASE, onceVisible, prefersReducedMotion, pulse } from "../motion";
+import { scoreTone, themeColor, withAlpha } from "../themeColors";
 
 const CIRCUMFERENCE = 282.7;
-
-function scoreColor(score, undetermined) {
-  if (undetermined) return "#85948e";
-  if (score >= 75) return "#5ffbd6";
-  if (score >= 50) return "#f59e0b";
-  return "#f43f5e";
-}
 
 function statusLabel(score, undetermined) {
   if (undetermined) return "Analyse incomplète";
@@ -24,9 +23,29 @@ export default function ScoreGauge({
 }) {
   const value = Math.max(0, Math.min(100, Number(score) || 0));
   const undetermined = risk === "Indéterminé";
-  const color = scoreColor(value, undetermined);
+  const color = undetermined
+    ? themeColor("outline", "#85948e")
+    : scoreTone(value).color;
   const offset = undetermined ? CIRCUMFERENCE : CIRCUMFERENCE - (CIRCUMFERENCE * value) / 100;
   const status = statusLabel(value, undetermined);
+  const scoreRef = useCountUp(undetermined ? NaN : Math.round(value), { onDone: pulse });
+  const arcRef = useRef(null);
+
+  // L'arc se remplit au rythme du compteur : les deux racontent la meme mesure.
+  useLayoutEffect(() => {
+    const arc = arcRef.current;
+    if (!arc || prefersReducedMotion()) return undefined;
+
+    utils.set(arc, { strokeDashoffset: CIRCUMFERENCE });
+
+    return onceVisible(arc, () =>
+      animate(arc, {
+        strokeDashoffset: offset,
+        duration: DURATION.figure,
+        ease: EASE.out,
+      })
+    );
+  }, [offset]);
 
   return (
     <div className="panel h-full">
@@ -40,7 +59,7 @@ export default function ScoreGauge({
         <div className="relative mt-md flex h-48 w-48 items-center justify-center">
           <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 100 100">
             <circle
-              className="text-outline-variant opacity-10"
+              className="text-outline-variant opacity-20"
               cx="50"
               cy="50"
               r="45"
@@ -51,6 +70,7 @@ export default function ScoreGauge({
           </svg>
           <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 100 100">
             <circle
+              ref={arcRef}
               cx="50"
               cy="50"
               r="45"
@@ -59,12 +79,14 @@ export default function ScoreGauge({
               strokeWidth="2"
               strokeDasharray={CIRCUMFERENCE}
               strokeDashoffset={offset}
-              className="transition-all duration-1000 ease-out"
-              style={{ filter: `drop-shadow(0 0 8px ${color}4d)` }}
+              style={{ filter: `drop-shadow(0 0 8px ${withAlpha(color, 0.35)})` }}
             />
           </svg>
           <div className="flex flex-col items-center text-center">
-            <span className="font-display-lg text-display-lg tracking-tighter text-primary">
+            <span
+              ref={scoreRef}
+              className="font-display-lg text-display-lg tracking-tighter text-primary"
+            >
               {undetermined ? "?" : Math.round(value)}
             </span>
             <span className="mt-1 font-label-caps text-label-caps uppercase text-on-surface-variant">
@@ -76,7 +98,11 @@ export default function ScoreGauge({
         <div className="mt-auto flex w-full flex-col items-center gap-sm pt-md">
           <div
             className="rounded border px-sm py-xs font-label-caps text-label-caps uppercase tracking-widest"
-            style={{ color, borderColor: `${color}33`, backgroundColor: `${color}1a` }}
+            style={{
+              color,
+              borderColor: withAlpha(color, 0.2),
+              backgroundColor: withAlpha(color, 0.1),
+            }}
           >
             {status}
           </div>

@@ -7,6 +7,7 @@ import PageHeader from "../components/PageHeader";
 import StatusBadge from "../components/StatusBadge";
 import { CardSkeleton } from "../components/Skeleton";
 import { api } from "../api/client";
+import { scoreTone } from "../themeColors";
 
 function normalizeDomain(value) {
   return value
@@ -33,9 +34,7 @@ function formatDateTime(value) {
 }
 
 function scoreColor(score) {
-  if (score >= 75) return "#5ffbd6";
-  if (score >= 50) return "#f59e0b";
-  return "#f43f5e";
+  return scoreTone(score).color;
 }
 
 export default function Platforms() {

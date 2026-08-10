@@ -1,3 +1,8 @@
+import { animate, utils } from "animejs";
+import { useLayoutEffect, useRef } from "react";
+
+import { DURATION, EASE, prefersReducedMotion } from "../motion";
+
 function stripNoise(text) {
   const boldParts = [];
   let value = String(text || "").replace(/\*\*([^*]+)\*\*/g, (_, inner) => {
@@ -220,9 +225,31 @@ function CodeBlock({ language, code }) {
 export default function ChatMessage({ content, role }) {
   const isUser = role === "user";
   const blocks = parseBlocks(content);
+  const bubbleRef = useRef(null);
+
+  // La bulle arrive du cote de son auteur : le fil de discussion reste lisible
+  // même quand plusieurs réponses s'enchaînent.
+  useLayoutEffect(() => {
+    const bubble = bubbleRef.current;
+    if (!bubble || prefersReducedMotion()) return;
+
+    utils.set(bubble, { opacity: 0 });
+    animate(bubble, {
+      opacity: [0, 1],
+      translateY: [10, 0],
+      translateX: [isUser ? 16 : -16, 0],
+      duration: DURATION.base,
+      ease: EASE.out,
+      onComplete: () => {
+        bubble.style.removeProperty("opacity");
+        bubble.style.removeProperty("transform");
+      },
+    });
+  }, [isUser]);
 
   return (
     <div
+      ref={bubbleRef}
       className={`max-w-3xl rounded px-md py-sm leading-relaxed ${
         isUser
           ? "ml-auto bg-primary-container text-on-primary"

@@ -1,6 +1,10 @@
 import Icon from "./Icon";
+import useCountUp from "../hooks/useCountUp";
 
 export default function StatCard({ label, value, hint, icon = "monitoring", tone = "accent" }) {
+  // Seules les valeurs purement numeriques defilent : un ratio ou un tiret
+  // reste affiche tel quel.
+  const countRef = useCountUp(typeof value === "number" ? value : NaN);
   const tones = {
     accent: "text-primary-container border-primary-container/30 bg-primary-container/10",
     success: "text-success border-success/30 bg-success/10",
@@ -19,7 +23,11 @@ export default function StatCard({ label, value, hint, icon = "monitoring", tone
             <Icon name={icon} size={18} />
           </span>
         </div>
-        <p className="font-display-lg tracking-tighter text-primary" style={{ fontSize: "32px", lineHeight: "40px" }}>
+        <p
+          ref={countRef}
+          className="font-display-lg tracking-tighter text-primary"
+          style={{ fontSize: "32px", lineHeight: "40px" }}
+        >
           {value}
         </p>
         {hint && (

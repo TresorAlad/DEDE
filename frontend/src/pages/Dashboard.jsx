@@ -9,6 +9,7 @@ import StatCard from "../components/StatCard";
 import StatusBadge from "../components/StatusBadge";
 import { CardSkeleton } from "../components/Skeleton";
 import { api } from "../api/client";
+import { scoreTone, themeColor } from "../themeColors";
 
 function formatDateTime(value) {
   if (!value) return "-";
@@ -193,7 +194,11 @@ export default function Dashboard() {
                         const platform = platformById[audit.platform_id];
                         const critical = audit.status === "failed";
                         const warning = audit.score != null && audit.score < 50;
-                        const strip = critical ? "#f43f5e" : warning ? "#f59e0b" : null;
+                        const strip = critical
+                          ? themeColor("critical")
+                          : warning
+                            ? themeColor("warning")
+                            : null;
                         return (
                           <tr key={audit.id} className="relative">
                             {strip && (
@@ -213,10 +218,7 @@ export default function Dashboard() {
                               {audit.score != null ? (
                                 <span
                                   className="font-bold"
-                                  style={{
-                                    color:
-                                      audit.score >= 75 ? "#5ffbd6" : audit.score >= 50 ? "#f59e0b" : "#f43f5e",
-                                  }}
+                                  style={{ color: scoreTone(audit.score).color }}
                                 >
                                   {Math.round(audit.score)}/100
                                 </span>

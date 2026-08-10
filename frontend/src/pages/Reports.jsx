@@ -3,9 +3,11 @@ import { Link, useSearchParams } from "react-router-dom";
 import AppShell from "../components/AppShell";
 import Icon from "../components/Icon";
 import PageHeader from "../components/PageHeader";
+import Reveal from "../components/Reveal";
 import StatusBadge from "../components/StatusBadge";
 import { Skeleton } from "../components/Skeleton";
 import { api } from "../api/client";
+import { scoreTone, themeColor } from "../themeColors";
 
 function formatDate(value) {
   if (!value) return "-";
@@ -23,9 +25,7 @@ function formatDate(value) {
 }
 
 function scoreColor(score) {
-  if (score >= 75) return "#5ffbd6";
-  if (score >= 50) return "#f59e0b";
-  return "#f43f5e";
+  return scoreTone(score).color;
 }
 
 function auditReference(id) {
@@ -132,7 +132,7 @@ export default function Reports() {
                     <th className="text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody>
+                <Reveal as="tbody">
                   {loading &&
                     Array.from({ length: 3 }).map((_, i) => (
                       <tr key={i}>
@@ -146,9 +146,13 @@ export default function Reports() {
                     visibleAudits.map((audit) => {
                       const critical = audit.status === "failed";
                       const warning = audit.score != null && audit.score < 50;
-                      const strip = critical ? "#f43f5e" : warning ? "#f59e0b" : null;
+                      const strip = critical
+                        ? themeColor("critical")
+                        : warning
+                          ? themeColor("warning")
+                          : null;
                       return (
-                        <tr key={audit.id} className="relative">
+                        <tr key={audit.id} className="relative" data-reveal>
                           {strip && (
                             <td
                               className="absolute bottom-0 left-0 top-0 w-1 p-0"
@@ -202,7 +206,7 @@ export default function Reports() {
                       </td>
                     </tr>
                   )}
-                </tbody>
+                </Reveal>
               </table>
             </div>
           </div>

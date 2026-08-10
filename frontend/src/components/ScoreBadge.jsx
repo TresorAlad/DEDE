@@ -1,18 +1,16 @@
-function palette(score) {
-  if (score >= 75) return { color: "#5ffbd6", label: "Optimal" };
-  if (score >= 50) return { color: "#f59e0b", label: "À surveiller" };
-  if (score > 0) return { color: "#f43f5e", label: "Critique" };
-  return { color: "#85948e", label: "Indéterminé" };
-}
+import { scoreTone, withAlpha } from "../themeColors";
 
 export default function ScoreBadge({ score = 0, risk = "Inconnu" }) {
   const value = Math.round(Number(score) || 0);
-  const { color, label } = palette(value);
+  const { color, label } = scoreTone(value);
 
   return (
     <div
       className="inline-flex flex-col rounded border px-md py-sm"
-      style={{ borderColor: `${color}33`, backgroundColor: `${color}14` }}
+      style={{
+        borderColor: withAlpha(color, 0.2),
+        backgroundColor: withAlpha(color, 0.08),
+      }}
     >
       <span className="font-label-caps text-label-caps uppercase text-on-surface-variant">
         Score ƉEƉE

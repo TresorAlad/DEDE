@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import AppShell from "../components/AppShell";
 import AuditProgress from "../components/AuditProgress";
 import CategoryBreakdown from "../components/CategoryBreakdown";
+import ConfirmDialog from "../components/ConfirmDialog";
 import Icon from "../components/Icon";
 import PageHeader from "../components/PageHeader";
 import RiskList from "../components/RiskList";
@@ -86,6 +87,23 @@ export default function Report() {
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
   const [reanalyzing, setReanalyzing] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+
+  async function handleCancelAudit() {
+    setCancelling(true);
+    setError("");
+    try {
+      await api(`/audits/${auditId}/cancel`, { method: "POST" });
+      const data = await api(`/reports/${auditId}`);
+      setReport(data);
+      setCancelOpen(false);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setCancelling(false);
+    }
+  }
 
   async function handleReanalyze() {
     setReanalyzing(true);
@@ -148,6 +166,7 @@ export default function Report() {
   }, [auditId, report?.status]);
 
   const completed = report?.status === "completed";
+  const cancellable = report?.status === "queued" || report?.status === "running";
 
   return (
     <AppShell>
@@ -171,6 +190,17 @@ export default function Report() {
         actions={
           <div className="flex flex-wrap items-center gap-sm">
             {report && <StatusBadge value={report.status} />}
+            {cancellable && (
+              <button
+                type="button"
+                onClick={() => setCancelOpen(true)}
+                disabled={cancelling}
+                className="btn-danger"
+              >
+                <Icon name="cancel" size={16} />
+                {cancelling ? "Annulation..." : "Annuler l'audit"}
+              </button>
+            )}
             <button
               type="button"
               onClick={handleReanalyze}
@@ -196,6 +226,19 @@ export default function Report() {
             </Link>
           </div>
         }
+      />
+
+      <ConfirmDialog
+        open={cancelOpen}
+        tone="danger"
+        title="Annuler cet audit ?"
+        description="L'analyse en cours sera interrompue. Vous pourrez en lancer une nouvelle ensuite."
+        confirmLabel="Annuler l'audit"
+        cancelLabel="Continuer l'audit"
+        loading={cancelling}
+        loadingLabel="Annulation..."
+        onConfirm={handleCancelAudit}
+        onCancel={() => !cancelling && setCancelOpen(false)}
       />
 
       {error && (

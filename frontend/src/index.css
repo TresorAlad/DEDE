@@ -2,8 +2,161 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/*
+ * Tokens de couleur en RGB espace-séparé pour permettre les opacités
+ * Tailwind (ex. bg-surface/80).
+ *
+ * Mode clair = :root (défaut)
+ * Mode sombre = html.dark
+ */
+
+:root,
+html.light {
+  color-scheme: light;
+
+  --color-background: 244 247 245;
+  --color-surface: 255 255 255;
+  --color-surface-dim: 238 242 240;
+  --color-surface-bright: 255 255 255;
+  --color-surface-container-lowest: 255 255 255;
+  --color-surface-container-low: 238 242 240;
+  --color-surface-container: 230 235 232;
+  --color-surface-container-high: 221 228 224;
+  --color-surface-container-highest: 208 217 212;
+  --color-surface-variant: 208 217 212;
+  --color-surface-tint: 0 107 88;
+
+  --color-on-background: 14 21 18;
+  --color-on-surface: 14 21 18;
+  --color-on-surface-variant: 74 88 83;
+
+  --color-outline: 107 122 116;
+  --color-outline-variant: 197 208 203;
+
+  --color-primary: 14 21 18;
+  --color-on-primary: 255 255 255;
+  --color-primary-container: 0 107 88;
+  --color-on-primary-container: 0 56 45;
+  --color-primary-fixed: 95 251 214;
+  --color-primary-fixed-dim: 56 222 187;
+  --color-on-primary-fixed: 0 32 25;
+  --color-on-primary-fixed-variant: 0 81 66;
+  --color-inverse-primary: 95 251 214;
+
+  --color-secondary: 55 71 103;
+  --color-on-secondary: 255 255 255;
+  --color-secondary-container: 216 226 255;
+  --color-on-secondary-container: 32 48 79;
+  --color-secondary-fixed: 216 226 255;
+  --color-secondary-fixed-dim: 182 198 237;
+  --color-on-secondary-fixed: 9 27 57;
+  --color-on-secondary-fixed-variant: 55 71 103;
+
+  --color-tertiary: 35 49 72;
+  --color-on-tertiary: 255 255 255;
+  --color-tertiary-container: 214 227 255;
+  --color-on-tertiary-container: 57 71 95;
+  --color-tertiary-fixed: 214 227 255;
+  --color-tertiary-fixed-dim: 185 199 228;
+  --color-on-tertiary-fixed: 13 28 50;
+  --color-on-tertiary-fixed-variant: 57 71 95;
+
+  --color-error: 186 26 26;
+  --color-on-error: 255 255 255;
+  --color-error-container: 255 218 214;
+  --color-on-error-container: 65 0 2;
+
+  --color-inverse-surface: 43 50 47;
+  --color-inverse-on-surface: 221 228 224;
+
+  --color-critical: 225 29 72;
+  --color-warning: 217 119 6;
+  --color-success: 5 150 105;
+
+  --glow-accent: rgba(0, 107, 88, 0.25);
+  --glow-critical: rgba(225, 29, 72, 0.35);
+  --grid-line: rgba(0, 107, 88, 0.08);
+  --ambient-line: 197 208 203;
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: 197 208 203;
+  --body-glow: radial-gradient(circle at 50% 0%, rgba(0, 107, 88, 0.08) 0%, transparent 60%);
+  --selection-bg: 0 107 88;
+  --selection-fg: 255 255 255;
+  --input-focus-bg: 238 242 240;
+}
+
+html.dark {
   color-scheme: dark;
+
+  --color-background: 14 21 18;
+  --color-surface: 14 21 18;
+  --color-surface-dim: 14 21 18;
+  --color-surface-bright: 51 59 56;
+  --color-surface-container-lowest: 9 16 13;
+  --color-surface-container-low: 22 29 27;
+  --color-surface-container: 26 33 31;
+  --color-surface-container-high: 36 44 41;
+  --color-surface-container-highest: 47 54 51;
+  --color-surface-variant: 47 54 51;
+  --color-surface-tint: 56 222 187;
+
+  --color-on-background: 221 228 224;
+  --color-on-surface: 221 228 224;
+  --color-on-surface-variant: 186 202 195;
+
+  --color-outline: 133 148 142;
+  --color-outline-variant: 60 74 69;
+
+  --color-primary: 255 255 255;
+  --color-on-primary: 0 56 45;
+  --color-primary-container: 95 251 214;
+  --color-on-primary-container: 0 114 94;
+  --color-primary-fixed: 95 251 214;
+  --color-primary-fixed-dim: 56 222 187;
+  --color-on-primary-fixed: 0 32 25;
+  --color-on-primary-fixed-variant: 0 81 66;
+  --color-inverse-primary: 0 107 88;
+
+  --color-secondary: 182 198 237;
+  --color-on-secondary: 32 48 79;
+  --color-secondary-container: 55 71 103;
+  --color-on-secondary-container: 165 181 219;
+  --color-secondary-fixed: 216 226 255;
+  --color-secondary-fixed-dim: 182 198 237;
+  --color-on-secondary-fixed: 9 27 57;
+  --color-on-secondary-fixed-variant: 55 71 103;
+
+  --color-tertiary: 255 255 255;
+  --color-on-tertiary: 35 49 72;
+  --color-tertiary-container: 214 227 255;
+  --color-on-tertiary-container: 87 101 126;
+  --color-tertiary-fixed: 214 227 255;
+  --color-tertiary-fixed-dim: 185 199 228;
+  --color-on-tertiary-fixed: 13 28 50;
+  --color-on-tertiary-fixed-variant: 57 71 95;
+
+  --color-error: 255 180 171;
+  --color-on-error: 105 0 5;
+  --color-error-container: 147 0 10;
+  --color-on-error-container: 255 218 214;
+
+  --color-inverse-surface: 221 228 224;
+  --color-inverse-on-surface: 43 50 47;
+
+  --color-critical: 244 63 94;
+  --color-warning: 245 158 11;
+  --color-success: 16 185 129;
+
+  --glow-accent: rgba(95, 251, 214, 0.4);
+  --glow-critical: rgba(244, 63, 94, 0.5);
+  --grid-line: rgba(95, 251, 214, 0.05);
+  --ambient-line: 60 74 69;
+  --glass-bg: rgba(47, 54, 51, 0.4);
+  --glass-border: 60 74 69;
+  --body-glow: radial-gradient(circle at 50% 0%, rgba(56, 222, 187, 0.05) 0%, transparent 60%);
+  --selection-bg: 95 251 214;
+  --selection-fg: 0 114 94;
+  --input-focus-bg: 36 44 41;
 }
 
 * {
@@ -21,17 +174,20 @@ body {
   font-family: Inter, system-ui, sans-serif;
   font-size: 16px;
   line-height: 24px;
-  color: #dde4e0;
-  background-color: #0e1512;
-  background-image: radial-gradient(circle at 50% 0%, rgba(56, 222, 187, 0.05) 0%, transparent 60%);
+  color: rgb(var(--color-on-background));
+  background-color: rgb(var(--color-background));
+  background-image: var(--body-glow);
   background-repeat: no-repeat;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  transition:
+    background-color 200ms ease,
+    color 200ms ease;
 }
 
 ::selection {
-  background: #5ffbd6;
-  color: #00725e;
+  background: rgb(var(--selection-bg));
+  color: rgb(var(--selection-fg));
 }
 
 button,
@@ -58,12 +214,12 @@ select {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3c4a45;
+  background: rgb(var(--color-outline-variant));
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #85948e;
+  background: rgb(var(--color-outline));
 }
 
 @keyframes fade-in {
@@ -97,33 +253,34 @@ select {
 }
 
 @layer components {
-  /* Trame technique de la page d'accueil. */
   .tech-grid {
     background-size: 40px 40px;
     background-image:
-      linear-gradient(to right, rgba(95, 251, 214, 0.05) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(95, 251, 214, 0.05) 1px, transparent 1px);
+      linear-gradient(to right, var(--grid-line) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--grid-line) 1px, transparent 1px);
   }
 
-  /* Grille ambiante des ecrans d'authentification. */
   .ambient-grid {
     background-image:
-      linear-gradient(to right, #3c4a45 1px, transparent 1px),
-      linear-gradient(to bottom, #3c4a45 1px, transparent 1px);
+      linear-gradient(to right, rgb(var(--ambient-line)) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(var(--ambient-line)) 1px, transparent 1px);
     background-size: 4rem 4rem;
     -webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, #000 20%, transparent 100%);
     mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, #000 20%, transparent 100%);
+    opacity: 0.35;
+  }
+
+  html.dark .ambient-grid {
     opacity: 0.2;
   }
 
   .glass-panel {
-    background: rgba(47, 54, 51, 0.4);
+    background: var(--glass-bg);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
-    border: 1px solid #3c4a45;
+    border: 1px solid rgb(var(--glass-border));
   }
 
-  /* Carte standard : conteneur bas + voile tonal, comme dans les maquettes. */
   .panel {
     @apply relative overflow-hidden rounded border border-outline-variant/30 bg-surface-container-low;
   }
@@ -141,7 +298,7 @@ select {
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-sm rounded border border-primary-container px-md py-sm font-label-caps text-label-caps uppercase tracking-wider text-primary-container transition-colors hover:bg-primary-container hover:text-surface-container-lowest disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-primary-container;
+    @apply inline-flex items-center justify-center gap-sm rounded border border-primary-container px-md py-sm font-label-caps text-label-caps uppercase tracking-wider text-primary-container transition-colors hover:bg-primary-container hover:text-on-primary disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent disabled:hover:text-primary-container;
   }
 
   .btn-ghost {
@@ -149,7 +306,7 @@ select {
   }
 
   .btn-danger {
-    @apply inline-flex items-center justify-center gap-sm rounded border border-critical/40 bg-critical/10 px-md py-sm font-label-caps text-label-caps uppercase tracking-wider text-critical transition-colors hover:bg-critical hover:text-surface-container-lowest disabled:cursor-not-allowed disabled:opacity-40;
+    @apply inline-flex items-center justify-center gap-sm rounded border border-critical/40 bg-critical/10 px-md py-sm font-label-caps text-label-caps uppercase tracking-wider text-critical transition-colors hover:bg-critical hover:text-on-primary disabled:cursor-not-allowed disabled:opacity-40;
   }
 
   .input-field {
@@ -157,9 +314,9 @@ select {
   }
 
   .input-field:focus {
-    border-color: #5ffbd6;
-    background-color: #242c29;
-    box-shadow: 0 0 0 1px #5ffbd6;
+    border-color: rgb(var(--color-primary-container));
+    background-color: rgb(var(--input-focus-bg));
+    box-shadow: 0 0 0 1px rgb(var(--color-primary-container));
   }
 
   .field-label {
@@ -193,10 +350,23 @@ select {
 
 @layer utilities {
   .outer-glow-critical {
-    box-shadow: 0 0 8px #f43f5e;
+    box-shadow: 0 0 8px var(--glow-critical);
   }
 
   .outer-glow-accent {
-    box-shadow: 0 0 8px rgba(95, 251, 214, 0.4);
+    box-shadow: 0 0 8px var(--glow-accent);
+  }
+}
+
+/* Les animations pilotees en JavaScript sont neutralisees dans src/motion.js ;
+   cette regle couvre celles decrites en CSS, y compris les classes Tailwind. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
   }
 }
