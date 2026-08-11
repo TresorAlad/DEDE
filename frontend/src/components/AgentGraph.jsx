@@ -43,7 +43,8 @@ function AgentNode({ data }) {
   const meta = STATUS_META[normalizeStatus(data.status)] || STATUS_META.idle;
   return (
     <div
-      className={`relative flex min-w-[160px] flex-col gap-sm rounded-lg border px-sm py-base shadow-[0_2px_12px_rgba(0,0,0,0.25)] ${meta.cls}`}
+      title={`${data.label || data.id} · ${meta.label}`}
+      className={`relative flex min-w-[160px] flex-col gap-sm rounded-lg border px-sm py-base shadow-[0_2px_12px_rgba(0,0,0,0.25)] transition-transform duration-150 hover:scale-[1.03] hover:shadow-[0_4px_20px_rgba(0,0,0,0.35)] ${meta.cls}`}
     >
       <Handle type="target" position={Position.Left} className="!h-2 !w-2 !bg-outline-variant" />
       <div className="flex items-center gap-base">
@@ -251,6 +252,23 @@ export default function AgentGraph({ agents = [], events = [], height = 380 }) {
             <Controls className="!rounded-lg !border !border-outline-variant/50 !bg-surface-container !text-on-surface-variant" />
           </ReactFlow>
         )}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-sm">
+        <span className="font-label-caps text-[10px] uppercase tracking-wider text-on-surface-variant">
+          Légende
+        </span>
+        {Object.entries(STATUS_META)
+          .filter(([key]) => ["running", "completed", "failed", "idle", "stopped"].includes(key))
+          .map(([key, meta]) => (
+            <span
+              key={key}
+              className="flex items-center gap-base rounded-full border border-outline-variant/30 bg-surface-container px-sm py-xs font-label-caps text-[10px] uppercase tracking-wider text-on-surface-variant"
+            >
+              <span className={`h-1.5 w-1.5 rounded-pill ${meta.dot}`} />
+              {meta.label}
+            </span>
+          ))}
       </div>
     </div>
   );

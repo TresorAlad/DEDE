@@ -44,6 +44,78 @@ function normalizeDomain(value) {
     .replace(/:\d+$/, "");
 }
 
+function formatElapsed(startedAt, now) {
+  const start = startedAt ? new Date(startedAt).getTime() : null;
+  if (!start) return "--:--";
+  const seconds = Math.max(0, Math.floor((now - start) / 1000));
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+  const pad = (n) => String(n).padStart(2, "0");
+  return h > 0 ? `${pad(h)}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+}
+
+// Bandeau de suivi en direct : statut du run, run name, cible et durée écoulée.
+function RunLiveBar({ report, platform }) {
+  const running = report?.status === "queued" || report?.status === "running";
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    if (!running) return undefined;
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [running]);
+
+  // Durée : écoulée pendant le run, totale une fois terminé.
+  const duration =
+    running && report?.started_at
+      ? formatElapsed(report.started_at, now)
+      : report?.finished_at && report?.started_at
+        ? formatElapsed(report.started_at, new Date(report.finished_at).getTime())
+        : "--:--";
+
+  const status = report?.status || "queued";
+  const statusMeta = {
+    queued: { cls: "border-warning/40 bg-warning/10 text-warning", icon: "schedule", label: "En file" },
+    running: { cls: "border-primary-container/40 bg-primary-container/10 text-primary-container", icon: "progress_activity", label: "En cours", spin: true },
+    completed: { cls: "border-success/40 bg-success/10 text-success", icon: "task_alt", label: "Terminé" },
+    failed: { cls: "border-critical/40 bg-critical/10 text-critical", icon: "error", label: "Échec" },
+    cancelled: { cls: "border-warning/40 bg-warning/10 text-warning", icon: "block", label: "Annulé" },
+  };
+  const meta = statusMeta[status] || statusMeta.queued;
+
+  return (
+    <div className="panel">
+      <div className="panel-veil" />
+      <div className="relative z-10 flex flex-wrap items-center justify-between gap-sm p-sm">
+        <div className="flex flex-wrap items-center gap-base">
+          <span className={`chip ${meta.cls}`}>
+            <Icon
+              name={meta.icon}
+              size={14}
+              className={meta.spin ? "animate-spin" : ""}
+            />
+            {meta.label}
+          </span>
+          {report?.agent_run_name && (
+            <code className="font-data-mono text-[12px] text-on-surface-variant">
+              {report.agent_run_name}
+            </code>
+          )}
+          <span className="flex items-center gap-base font-data-mono text-[12px] text-on-surface-variant">
+            <Icon name="dns" size={14} />
+            {report?.target || platform?.domain || "—"}
+          </span>
+        </div>
+        <div className="flex items-center gap-base font-data-mono text-[12px] text-on-surface-variant">
+          <Icon name="schedule" size={14} />
+          {duration}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function StepIndicator({ current }) {
   return (
     <ol className="flex w-full items-center gap-0 overflow-x-auto">
@@ -654,6 +726,11 @@ export default function Launch() {
       {/* Étape 4 — Suivi en direct */}
       {step === 3 && auditId && (
         <>
+          {engine === "agents" && (
+            <div className="col-span-12">
+              <RunLiveBar report={report} platform={platform} />
+            </div>
+          )}
           {engine === "scanners" && (
             <div className="col-span-12">
               <p className="flex items-center gap-base rounded border border-outline-variant/30 bg-surface-container px-sm py-base font-data-mono text-[12px] text-on-surface-variant">
@@ -714,6 +791,7 @@ export default function Launch() {
                   <AgentActivity
                     events={report?.agent_graph?.events || []}
                     agents={report?.agent_graph?.agents || []}
+                    live={running}
                   />
                 </div>
               </div>

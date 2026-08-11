@@ -4,7 +4,7 @@ import Icon from "./Icon";
 import ThemeToggle from "./ThemeToggle";
 import { useAuthUser } from "../hooks/useAuthUser";
 
-export default function TopBar() {
+export default function TopBar({ tourLauncher = null }) {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { user } = useAuthUser();
@@ -40,6 +40,8 @@ export default function TopBar() {
       <div className="flex items-center gap-md">
         <div className="flex items-center gap-sm text-on-surface-variant">
           <ThemeToggle />
+          {tourLauncher}
+
           <Link
             to="/reports"
             className="relative flex h-10 w-10 scale-95 items-center justify-center rounded-full transition-colors hover:bg-surface-variant hover:text-primary active:scale-90"

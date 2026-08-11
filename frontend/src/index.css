@@ -222,6 +222,21 @@ select {
   background: rgb(var(--color-outline));
 }
 
+@keyframes blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.cursor-blink {
+  animation: blink 1.1s step-end infinite;
+}
+
 @keyframes fade-in {
   from {
     opacity: 0;

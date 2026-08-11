@@ -43,7 +43,7 @@ export default function Signup() {
         body: JSON.stringify(payload),
       });
       setToken(data.access_token);
-      navigate("/launch");
+      navigate("/welcome");
     } catch (err) {
       setError(err.message);
     } finally {

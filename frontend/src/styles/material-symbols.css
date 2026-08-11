@@ -1,12 +1,12 @@
 /* Genere par scripts/build-icon-font.mjs - ne pas modifier a la main.
-   83 icones : add, add_link, arrow_back, arrow_forward, assessment, assistant, badge, bolt, cancel, chat, check, check_circle, chevron_right, close, code, construction, content_copy, conversion_path, corporate_fare, dark_mode, dashboard, delete, description, details, dns, domain, done, download, edit, email, error, forum, gpp_maybe, history, http, hub, inbox, info, inventory_2, key, label, light, light_mode, lightbulb, link, list, lock, lock_reset, login, logout, mail, monitoring, neurology, opacity, password, pending, person, play_arrow, progress_activity, radar, refresh, save, scanner, schedule, search, security, send, settings, shield_lock, source, speed, table, target, task_alt, terminal, transform, uppercase, verified, verified_user, visibility, visibility_off, vpn_lock, warning */
+   89 icones : add, add_link, admin_panel_settings, arrow_back, arrow_forward, assessment, assistant, badge, bolt, cancel, chat, check, check_circle, chevron_right, close, code, construction, content_copy, conversion_path, corporate_fare, dark_mode, dashboard, delete, description, details, dns, domain, done, download, edit, email, error, expand_less, expand_more, forum, gpp_maybe, help, history, http, hub, inbox, info, inventory_2, key, label, launch, light, light_mode, lightbulb, link, list, lock, lock_reset, login, logout, mail, monitoring, neurology, opacity, password, pending, person, play_arrow, progress_activity, radar, refresh, replay, resize, save, scanner, schedule, search, send, settings, shield_lock, source, speed, table, target, task_alt, terminal, transform, verified, verified_user, visibility, visibility_off, vpn_lock, warning, waving_hand */
 @font-face {
   font-family: "Material Symbols Outlined";
   font-style: normal;
   font-weight: 100 700;
   /* block : n'affiche jamais le nom de la ligature en clair. */
   font-display: block;
-  src: url("../assets/material-symbols-subset.woff2?v=7d98858e") format("woff2");
+  src: url("../assets/material-symbols-subset.woff2?v=7fe1322e") format("woff2");
 }
 
 .material-symbols-outlined {

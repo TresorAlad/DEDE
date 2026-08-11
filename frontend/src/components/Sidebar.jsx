@@ -6,9 +6,9 @@ import { clearToken } from "../api/client";
 import { clearAuthUserCache, useAuthUser } from "../hooks/useAuthUser";
 
 const links = [
-  { to: "/launch", label: "Lancer un audit", icon: "play_arrow" },
-  { to: "/dashboard", label: "Tableau de bord", icon: "dashboard" },
-  { to: "/platforms", label: "Plateformes", icon: "inventory_2" },
+  { to: "/launch", label: "Lancer un audit", icon: "play_arrow", tour: "launch" },
+  { to: "/dashboard", label: "Tableau de bord", icon: "dashboard", tour: "dashboard" },
+  { to: "/platforms", label: "Plateformes", icon: "inventory_2", tour: "platforms" },
   { to: "/reports", label: "Rapports", icon: "assessment" },
   { to: "/profile", label: "Profil", icon: "settings" },
 ];
@@ -76,6 +76,7 @@ export default function Sidebar() {
             <Link
               key={link.to}
               to={link.to}
+              {...(link.tour ? { "data-tour": link.tour } : {})}
               className={
                 active
                   ? "flex items-center gap-sm rounded border-r-2 border-primary bg-primary/5 px-sm py-sm font-bold text-primary transition-all duration-200 ease-in-out"
