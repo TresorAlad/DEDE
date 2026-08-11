@@ -25,7 +25,7 @@ export default function RiskList({ items = [] }) {
   return (
     <ul className="space-y-sm">
       {items.map((item, index) => {
-        const command = item.fix_command || item.commande;
+        const command = item.fix_command || item.commande || item.remediation_steps;
         const severity = (item.severity || "info").toLowerCase();
         const strip = severityStrip(severity);
 

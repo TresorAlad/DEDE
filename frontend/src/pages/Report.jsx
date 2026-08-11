@@ -208,13 +208,9 @@ export default function Report() {
             <button
               type="button"
               onClick={handleReanalyze}
-              disabled={reanalyzing || !completed || report?.engine === "agents"}
+              disabled={reanalyzing || !completed}
               className="btn-ghost"
-              title={
-                report?.engine === "agents"
-                  ? "L'analyse est produite par les agents IA"
-                  : "Régénère les recommandations sans relancer le scan"
-              }
+              title="Régénère les recommandations sans relancer le scan"
             >
               <Icon name="refresh" size={16} className={reanalyzing ? "animate-spin" : ""} />
               {reanalyzing ? "Analyse..." : "Régénérer"}
