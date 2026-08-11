@@ -6,9 +6,9 @@ import { clearToken } from "../api/client";
 import { clearAuthUserCache, useAuthUser } from "../hooks/useAuthUser";
 
 const links = [
-  { to: "/launch", label: "Lancer un audit", icon: "play_arrow", tour: "launch" },
-  { to: "/dashboard", label: "Tableau de bord", icon: "dashboard", tour: "dashboard" },
-  { to: "/platforms", label: "Plateformes", icon: "inventory_2", tour: "platforms" },
+  { to: "/launch", label: "Lancer un audit", icon: "play_arrow" },
+  { to: "/dashboard", label: "Tableau de bord", icon: "dashboard" },
+  { to: "/platforms", label: "Plateformes", icon: "inventory_2" },
   { to: "/reports", label: "Rapports", icon: "assessment" },
   { to: "/profile", label: "Profil", icon: "settings" },
 ];
@@ -46,27 +46,16 @@ export default function Sidebar() {
 
   return (
     <nav className="fixed left-0 top-0 z-50 flex h-screen w-64 flex-col border-r border-outline-variant/30 bg-surface-container-low px-sm py-md">
-      <div className="mb-xl flex items-center gap-sm px-sm">
-        <div className="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-outline-variant/30 bg-primary-container/10">
+      <div className="mb-xl px-sm">
+        <Link to="/launch" className="block" aria-label="ƉEƉE - Accueil">
           <img
-            src="/favicon.png"
-            alt="ƉEƉE"
-            width={40}
-            height={40}
-            className="h-10 w-10 object-contain"
+            src="/logo.png"
+            alt="ƉEƉE Cybersecurity"
+            width={500}
+            height={145}
+            className="h-12 w-auto max-w-full object-contain object-left"
           />
-        </div>
-        <div className="flex flex-col">
-          <span
-            className="font-display-lg font-bold tracking-tighter text-primary"
-            style={{ fontSize: "24px", lineHeight: "32px" }}
-          >
-            ƉEƉE
-          </span>
-          <span className="font-label-caps text-label-caps uppercase text-on-surface-variant">
-            Moteur cybersécurité
-          </span>
-        </div>
+        </Link>
       </div>
 
       <div className="flex min-h-0 flex-1 flex-col gap-xs overflow-y-auto">
@@ -76,7 +65,6 @@ export default function Sidebar() {
             <Link
               key={link.to}
               to={link.to}
-              {...(link.tour ? { "data-tour": link.tour } : {})}
               className={
                 active
                   ? "flex items-center gap-sm rounded border-r-2 border-primary bg-primary/5 px-sm py-sm font-bold text-primary transition-all duration-200 ease-in-out"

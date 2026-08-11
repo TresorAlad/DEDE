@@ -20,13 +20,12 @@ export default function AuthLayout({ subtitle, children, footer }) {
       <Reveal as="main" delay={80} className="relative z-10 w-full max-w-md py-lg">
         <div className="mb-lg text-center" data-reveal>
           <img
-            src="/icon-192.png"
-            alt="ƉEƉE"
-            width={72}
-            height={72}
-            className="mx-auto mb-sm h-[72px] w-[72px] object-contain"
+            src="/logo.png"
+            alt="ƉEƉE Cybersecurity"
+            width={500}
+            height={145}
+            className="mx-auto mb-sm h-16 w-auto max-w-[280px] object-contain"
           />
-          <h1 className="mb-xs font-display-lg text-display-lg tracking-tighter text-primary">ƉEƉE</h1>
           <p className="font-data-mono text-data-mono text-on-surface-variant">{subtitle}</p>
         </div>
 

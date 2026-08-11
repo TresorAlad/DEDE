@@ -306,10 +306,15 @@ export default function Landing() {
         as="header"
         className="fixed inset-x-0 top-0 z-50 flex h-16 items-center justify-between border-b border-outline-variant/30 bg-surface/80 px-gutter backdrop-blur-md"
       >
-        <div className="flex items-center gap-xs" data-reveal>
-          <img src="/favicon.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />
-          <span className="font-headline-sm text-headline-sm font-bold text-primary">ƉEƉE</span>
-        </div>
+        <Link to="/" className="flex items-center" data-reveal aria-label="ƉEƉE - Accueil">
+          <img
+            src="/logo.png"
+            alt="ƉEƉE Cybersecurity"
+            width={500}
+            height={145}
+            className="h-9 w-auto object-contain"
+          />
+        </Link>
 
         <nav className="hidden gap-md lg:flex" data-reveal>
           {NAV_LINKS.map((link) => (
@@ -656,9 +661,14 @@ export default function Landing() {
       <footer className="border-t border-outline-variant/30 bg-surface-container-lowest px-gutter py-lg">
         <Reveal className="mx-auto grid max-w-7xl grid-cols-1 gap-lg md:grid-cols-4">
           <div data-reveal>
-            <div className="mb-sm flex items-center gap-xs">
-              <img src="/favicon.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />
-              <span className="font-headline-sm text-headline-sm font-bold text-primary">ƉEƉE</span>
+            <div className="mb-sm">
+              <img
+                src="/logo.png"
+                alt="ƉEƉE Cybersecurity"
+                width={500}
+                height={145}
+                className="h-10 w-auto object-contain object-left"
+              />
             </div>
             <p className="text-[14px] leading-5 text-on-surface-variant">
               Audits de cybersécurité orchestrés par une équipe d'agents IA pour les
