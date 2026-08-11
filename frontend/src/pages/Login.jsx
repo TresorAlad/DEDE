@@ -34,7 +34,7 @@ export default function Login() {
     try {
       const data = await api("/auth/demo-login", { method: "POST" });
       setToken(data.access_token);
-      navigate("/welcome");
+      navigate("/launch");
     } catch (err) {
       setError(err.message);
     } finally {
@@ -52,7 +52,7 @@ export default function Login() {
         body: JSON.stringify({ email, password }),
       });
       setToken(data.access_token);
-      navigate("/welcome");
+      navigate("/launch");
     } catch (err) {
       setError(err.message);
     } finally {

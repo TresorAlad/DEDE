@@ -99,35 +99,17 @@ En développement local, deux options :
 | Fichier | Écran |
 |---------|--------|
 | `Landing.jsx` | Page d'accueil publique (présentation, offre) |
-| `Login.jsx` / `Signup.jsx` | Authentification → redirigent vers `/welcome` |
-| `Welcome.jsx` | **Accueil connecté** : parcours progressif en 3 étapes (plateforme → propriété → audit) |
-| `Dashboard.jsx` | Vue d'ensemble **épurée** (détails repliés par défaut, progressive disclosure) |
-| `Launch.jsx` | Wizard de lancement en 4 étapes (cible → propriété → moteur → suivi en direct) |
+| `Login.jsx` / `Signup.jsx` | Authentification |
+| `Dashboard.jsx` | Vue d'ensemble |
 | `Platforms.jsx` / `AddPlatform.jsx` | Plateformes à auditer |
 | `Reports.jsx` / `Report.jsx` | Historique et détail d'audit |
 | `Chatbot.jsx` | Assistant sur un rapport |
 | `Profile.jsx` | Profil et mot de passe |
 | `legal/CGU.jsx` / `Confidentialite.jsx` | Mentions légales |
 
-### 2.3 Parcours utilisateur
+### 2.3 Composants (`src/components/`)
 
-Le produit guide l'utilisateur **pas à pas** plutôt que de le projeter sur un
-board dense :
-
-1. Connexion / inscription → **`/welcome`** (accueil connecté, 3 étapes) ;
-2. **Wizard** `/launch` (4 étapes) pour lancer un audit ;
-3. **Graphe d'orchestration** des agents en direct pendant l'exécution ;
-4. **Rapport** complet avec assistant IA.
-
-Un **guide de parcours** (`OnboardingTour`) s'ouvre au premier passage sur
-`/dashboard`, pointe les éléments clés de l'interface et peut être relancé via
-le bouton « ? » de la barre supérieure (`TopBar`). Il est mémorisé en
-`localStorage` et fermable par Échap.
-
-### 2.4 Composants (`src/components/`)
-
-Exemples : `Sidebar`, `AppShell`, `ScoreGauge`, `AuditProgress`, `ConfirmDialog`,
-`SessionGuard`, `StatusBadge`, `OnboardingTour`, `AgentGraph`, `AgentActivity`, etc.
+Exemples : `Sidebar`, `AppShell`, `ScoreGauge`, `AuditProgress`, `ConfirmDialog`, `SessionGuard`, `StatusBadge`, etc.
 
 ---
 
@@ -213,9 +195,7 @@ npm run dev
 | `/signup` | Public | Inscription |
 | `/cgu` | Public | Conditions d'utilisation |
 | `/confidentialite` | Public | Politique de confidentialité |
-| `/dashboard` | Privé | Tableau de bord (vue épurée, détails repliés) |
-| `/welcome` | Privé | **Accueil connecté** : parcours progressif en 3 étapes (destination post-login) |
-| `/launch` | Privé | Wizard de lancement d'audit en 4 étapes |
+| `/dashboard` | Privé | Tableau de bord |
 | `/platforms` | Privé | Liste des plateformes |
 | `/platforms/new` | Privé | Ajouter une plateforme |
 | `/reports` | Privé | Historique des audits |
@@ -223,17 +203,7 @@ npm run dev
 | `/reports/:auditId/chat` | Privé | Chatbot sur le rapport |
 | `/profile` | Privé | Profil utilisateur |
 
-Les routes privées exigent un jeton JWT valide et une session non expirée. Après
-connexion ou inscription, l'utilisateur est redirigé vers **`/welcome`**.
-
-### Icônes
-
-Les icônes Material Symbols sont auto-hébergées dans un sous-ensemble (≈ 90 ko).
-Après l'ajout d'une nouvelle icône dans le code, relancer :
-
-```bash
-npm run icons
-```
+Les routes privées exigent un jeton JWT valide et une session non expirée.
 
 ---
 
