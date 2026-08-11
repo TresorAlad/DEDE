@@ -14,7 +14,7 @@
 | Volet | Fournisseur | Modèle | Rôle principal |
 |-------|-------------|--------|----------------|
 | Analyse de rapport & chatbot | **Mistral AI** | `mistral-small-latest` | Synthèse FR, recommandations, dialogue sur le rapport |
-| Audit par agents IA | **DeepSeek** (via LiteLLM) | `deepseek/deepseek-v4-flash` | Orchestration multi-agents, exploration et détection |
+| Audit par agents IA | **Anthropic (Claude)** via LiteLLM | `anthropic/claude-sonnet-4-5` | Orchestration multi-agents, exploration et détection |
 
 Les scanners classiques (Amass, Nuclei, sslyze, en-têtes HTTP) restent **déterministes** : ils ne font pas appel à un LLM pour produire les findings bruts.
 
@@ -86,18 +86,19 @@ Si `MISTRAL_API_KEY` est absente :
 
 ---
 
-## 3. Modèle DeepSeek - `deepseek/deepseek-v4-flash`
+## 3. Modèle Claude - `anthropic/claude-sonnet-4-5`
 
 ### 3.1 Identification
 
 | Attribut | Valeur |
 |----------|--------|
-| Fournisseur | DeepSeek |
-| Identifiant configuré | `deepseek/deepseek-v4-flash` |
+| Fournisseur | Anthropic |
+| Famille | Claude (Sonnet 4.5) |
+| Identifiant configuré | `anthropic/claude-sonnet-4-5` |
 | Variable d'environnement | `DEDE_LLM` |
 | Passerelle | LiteLLM + SDK OpenAI Agents |
-| Base API | `LLM_API_BASE=https://api.deepseek.com` |
-| Authentification | `LLM_API_KEY` |
+| Base API | `LLM_API_BASE=https://api.anthropic.com` |
+| Authentification | `LLM_API_KEY` (clé API Anthropic) |
 | Service | Instance **dede-agent** (hors stack core), exposée via `agent-service` (`DEDE_AGENT_URL`) |
 
 ### 3.2 Usages dans ƉEƉE
@@ -108,28 +109,28 @@ Ce modèle alimente le moteur **Agent IA** (option d'audit distincte du scanner 
 - exploration guidée de la cible (dans le cadre autorisé) ;
 - production d'artefacts : vulnérabilités, rapport markdown, éventuel export ZIP, transcript du graphe d'agents.
 
-Le core ƉEƉE ne dialogue pas directement avec DeepSeek : il appelle le microservice `agent-service`, qui supervise le CLI dede-agent.
+Le core ƉEƉE ne dialogue pas directement avec Claude : il appelle le microservice `agent-service`, qui supervise le CLI dede-agent.
 
 ### 3.3 Chaîne post-audit (lien avec Mistral)
 
 ```
-DeepSeek (agents)  →  artefacts (MD EN + vulns / ZIP)
+Claude (agents)  →  artefacts (MD EN + vulns / ZIP)
                               ↓
                      Mistral (transcription FR)
                               ↓
                      Rapport client ƉEƉE (UI / PDF)
 ```
 
-Ainsi, DeepSeek produit l'analyse technique multi-agents ; Mistral assure la **mise en forme francophone** pour le client final.
+Ainsi, Claude produit l'analyse technique multi-agents ; Mistral assure la **mise en forme francophone** pour le client final.
 
 ### 3.4 Configuration de référence
 
 Extrait de configuration documentée (instance dede-agent) :
 
 ```bash
-DEDE_LLM=deepseek/deepseek-v4-flash
-LLM_API_KEY=<clé API>
-LLM_API_BASE=https://api.deepseek.com
+DEDE_LLM=anthropic/claude-sonnet-4-5
+LLM_API_KEY=<clé API Anthropic>
+LLM_API_BASE=https://api.anthropic.com
 ```
 
 ---
@@ -154,9 +155,9 @@ LLM_API_BASE=https://api.deepseek.com
 - Bon compromis **qualité / coût / latence** pour la rédaction structurée (JSON) et le chatbot.
 - API stable via le SDK officiel `mistralai`.
 
-### DeepSeek `deepseek-v4-flash`
+### Claude Sonnet 4.5
 - Orienté **agentique** (via OpenAI Agents + LiteLLM) : adapté aux boucles multi-agents, outils et raisonnement d'audit.
-- Profil « flash » : réactivité et coût maîtrisés pour des runs potentiellement longs.
+- Solide en planification, suivi d'instructions et production de rapports techniques structurés.
 - Configurable (`DEDE_LLM`) sans modifier le code core ƉEƉE.
 
 ---
@@ -179,7 +180,7 @@ LLM_API_BASE=https://api.deepseek.com
 | `application/ai/chatbot.py` | Chatbot function calling |
 | `application/ai/prompts/explain_findings.md` | Prompt scanners |
 | `application/ai/prompts/explain_agent_report.md` | Prompt transcription agents |
-| `.env.docker.dede-agent.example` | Configuration DeepSeek pour dede-agent |
+| `.env.docker.dede-agent.example` | Configuration Claude pour dede-agent |
 | `docker/Dockerfile.agent-service` | Runtime agents (LiteLLM / openai-agents) |
 
 ---
@@ -189,6 +190,6 @@ LLM_API_BASE=https://api.deepseek.com
 Pour les livrables ƉEƉE, les modèles d'IA à citer sont :
 
 1. **Mistral AI - `mistral-small-latest`** : analyse, recommandations, plan de correction et chatbot (cœur produit francophone).  
-2. **DeepSeek - `deepseek/deepseek-v4-flash`** : moteur des audits multi-agents IA.
+2. **Anthropic Claude - `anthropic/claude-sonnet-4-5`** : moteur des audits multi-agents IA.
 
-Cette architecture sépare clairement **détection / raisonnement agentique** (DeepSeek) et **communication client en français** (Mistral).
+Cette architecture sépare clairement **détection / raisonnement agentique** (Claude) et **communication client en français** (Mistral).
