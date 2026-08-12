@@ -83,7 +83,7 @@ export default function Chatbot() {
       </div>
 
       <PageHeader
-        title="Assistant ƉEƉE"
+        title="Assistant ƉeƉeFIA"
         subtitle={`Analyse conversationnelle de l'audit AUD-${String(auditId).padStart(4, "0")}.`}
         actions={
           <div className="chip border-primary-container/30 bg-primary-container/10 text-primary-container">

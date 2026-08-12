@@ -13,7 +13,7 @@ export default function ScoreBadge({ score = 0, risk = "Inconnu" }) {
       }}
     >
       <span className="font-label-caps text-label-caps uppercase text-on-surface-variant">
-        Score ƉEƉE
+        Score ƉeƉeFIA
       </span>
       <span className="font-display-lg tracking-tighter" style={{ color, fontSize: "32px", lineHeight: "40px" }}>
         {value}

@@ -306,10 +306,10 @@ export default function Landing() {
         as="header"
         className="fixed inset-x-0 top-0 z-50 flex h-16 items-center justify-between border-b border-outline-variant/30 bg-surface/80 px-gutter backdrop-blur-md"
       >
-        <Link to="/" className="flex items-center" data-reveal aria-label="ƉEƉE - Accueil">
+        <Link to="/" className="flex items-center" data-reveal aria-label="ƉeƉeFIA - Accueil">
           <img
             src="/logo.png"
-            alt="ƉEƉE Cybersecurity"
+            alt="ƉeƉeFIA"
             width={500}
             height={145}
             className="h-9 w-auto object-contain"
@@ -664,7 +664,7 @@ export default function Landing() {
             <div className="mb-sm">
               <img
                 src="/logo.png"
-                alt="ƉEƉE Cybersecurity"
+                alt="ƉeƉeFIA"
                 width={500}
                 height={145}
                 className="h-10 w-auto object-contain object-left"
@@ -707,7 +707,7 @@ export default function Landing() {
         </Reveal>
 
         <div className="mx-auto mt-lg max-w-7xl border-t border-outline-variant/30 pt-sm text-center text-[14px] text-on-surface-variant">
-          © 2026 ƉEƉE. Sécurisé dès la conception.
+          © 2026 ƉeƉeFIA. Sécurisé dès la conception.
         </div>
       </footer>
     </div>

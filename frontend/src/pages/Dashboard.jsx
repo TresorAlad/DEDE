@@ -392,7 +392,7 @@ export default function Dashboard() {
                     <Icon name="neurology" size={24} />
                   </span>
                   <div>
-                    <h2 className="font-headline-sm text-headline-sm text-primary">Assistant IA ƉEƉE</h2>
+                    <h2 className="font-headline-sm text-headline-sm text-primary">Assistant IA ƉeƉeFIA</h2>
                     <p className="mt-xs max-w-2xl text-on-surface-variant">
                       Interrogez vos résultats d'audit en langage naturel : risques prioritaires,
                       recommandations et plan de correction.

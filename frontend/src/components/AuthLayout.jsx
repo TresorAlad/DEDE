@@ -21,7 +21,7 @@ export default function AuthLayout({ subtitle, children, footer }) {
         <div className="mb-lg text-center" data-reveal>
           <img
             src="/logo.png"
-            alt="ƉEƉE Cybersecurity"
+            alt="ƉeƉeFIA"
             width={500}
             height={145}
             className="mx-auto mb-sm h-16 w-auto max-w-[280px] object-contain"

@@ -7,7 +7,7 @@ export default function CGU() {
           <h2 className="pt-sm font-headline-sm text-[18px] leading-6 text-primary">1. Objet</h2>
           <p>
             Les présentes conditions générales d'utilisation régissent l'accès et l'utilisation de la
-            plateforme ƉEƉE (ci-après « la Plateforme »), un service d'audit de sécurité automatisé
+            plateforme ƉeƉeFIA (ci-après « la Plateforme »), un service d'audit de sécurité automatisé
             destiné à identifier les vulnérabilités et les failles de configuration exposées publiquement
             sur les domaines et sous-domaines d'une organisation.
           </p>
@@ -59,7 +59,7 @@ export default function CGU() {
           <p>
             La Plateforme s'appuie sur des composants open source tiers, distribués sous leurs
             licences respectives, ainsi que sur des services d'intelligence artificielle tiers. Le
-            code, l'interface et les contenus propres à ƉEƉE demeurent la propriété de ses auteurs.
+            code, l'interface et les contenus propres à ƉeƉeFIA demeurent la propriété de ses auteurs.
             La liste des composants utilisés est communiquée sur demande.
           </p>
 
@@ -71,7 +71,7 @@ export default function CGU() {
 
           <h2 className="pt-sm font-headline-sm text-[18px] leading-6 text-primary">9. Contact</h2>
           <p>
-            Pour toute question relative aux présentes conditions, contactez l'équipe du projet ƉEƉE via
+            Pour toute question relative aux présentes conditions, contactez l'équipe du projet ƉeƉeFIA via
             les canaux de communication indiqués sur la Plateforme.
           </p>
       </section>

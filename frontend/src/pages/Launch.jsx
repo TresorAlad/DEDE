@@ -462,7 +462,7 @@ export default function Launch() {
         <div className="col-span-12">
           <StepBody
             title="Preuve de propriété"
-            subtitle="Avant tout scan, ƉEƉE doit confirmer que vous contrôlez ce domaine."
+            subtitle="Avant tout scan, ƉeƉeFIA doit confirmer que vous contrôlez ce domaine."
             footer={
               verified ? (
                 <div className="flex flex-wrap items-center justify-between gap-sm">
@@ -497,7 +497,7 @@ export default function Launch() {
                         onClick={continueAsTeam}
                         disabled={busy}
                         className="btn-ghost"
-                        title="Réservé à l'équipe ƉEƉE"
+                        title="Réservé à l'équipe ƉeƉeFIA"
                       >
                         <Icon name="admin_panel_settings" size={16} />
                         Contourner (équipe)

@@ -18,7 +18,7 @@ const DEFAULT_STEPS = [
   {
     selector: null,
     icon: "waving_hand",
-    title: "Bienvenue sur ƉEƉE",
+    title: "Bienvenue sur ƉeƉeFIA",
     text: "Un moteur d'audit cybersécurité orchestré par une équipe d'agents IA. Ce guide vous fait découvrir l'essentiel en quelques secondes.",
   },
   {

@@ -47,10 +47,10 @@ export default function Sidebar() {
   return (
     <nav className="fixed left-0 top-0 z-50 flex h-screen w-64 flex-col border-r border-outline-variant/30 bg-surface-container-low px-sm py-md">
       <div className="mb-xl px-sm">
-        <Link to="/launch" className="block" aria-label="ƉEƉE - Accueil">
+        <Link to="/launch" className="block" aria-label="ƉeƉeFIA - Accueil">
           <img
             src="/logo.png"
-            alt="ƉEƉE Cybersecurity"
+            alt="ƉeƉeFIA"
             width={500}
             height={145}
             className="h-12 w-auto max-w-full object-contain object-left"
@@ -119,7 +119,7 @@ export default function Sidebar() {
         open={logoutOpen}
         tone="primary"
         title="Se déconnecter ?"
-        description="Vous quitterez votre session ƉEƉE. Vous pourrez vous reconnecter à tout moment avec vos identifiants."
+        description="Vous quitterez votre session ƉeƉeFIA. Vous pourrez vous reconnecter à tout moment avec vos identifiants."
         confirmLabel="Se déconnecter"
         cancelLabel="Rester connecté"
         onConfirm={confirmLogout}

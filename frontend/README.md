@@ -1,6 +1,6 @@
-# Frontend ƉEƉE
+# Frontend ƉeƉeFIA
 
-Interface React de la plateforme d'audit cybersécurité ƉEƉE.
+Interface React de la plateforme d'audit cybersécurité ƉeƉeFIA.
 
 Ce document explique comment installer et lancer `frontend/` sur votre machine. L'API, les scanners et l'IA se trouvent dans `application/` (voir [`../application/README.md`](../application/README.md)).
 
@@ -119,7 +119,7 @@ Exemples : `Sidebar`, `AppShell`, `ScoreGauge`, `AuditProgress`, `ConfirmDialog`
 |-----------|----------|
 | Node.js | 20+ recommandé |
 | npm | Fourni avec Node.js |
-| Backend ƉEƉE | API joignable (souvent `http://127.0.0.1:8000`) |
+| Backend ƉeƉeFIA | API joignable (souvent `http://127.0.0.1:8000`) |
 
 Pour lancer un audit complet depuis l'UI, le backend, Redis et le worker doivent aussi tourner (voir `application/README.md`).
 

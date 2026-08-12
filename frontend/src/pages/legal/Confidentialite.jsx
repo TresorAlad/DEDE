@@ -48,7 +48,7 @@ export default function Confidentialite() {
             Conformément à la réglementation applicable en matière de protection des données
             personnelles, chaque utilisateur dispose d'un droit d'accès, de rectification, d'opposition et
             de suppression de ses données. Ces droits peuvent être exercés en contactant l'équipe du
-            projet ƉEƉE via les canaux indiqués sur la Plateforme.
+            projet ƉeƉeFIA via les canaux indiqués sur la Plateforme.
           </p>
 
           <h2 className="pt-sm font-headline-sm text-[18px] leading-6 text-primary">7. Cookies et traceurs</h2>
@@ -61,7 +61,7 @@ export default function Confidentialite() {
           <h2 className="pt-sm font-headline-sm text-[18px] leading-6 text-primary">8. Contact</h2>
           <p>
             Pour toute question relative à la présente politique ou à l'exercice de vos droits, contactez
-            l'équipe du projet ƉEƉE via les canaux de communication indiqués sur la Plateforme.
+            l'équipe du projet ƉeƉeFIA via les canaux de communication indiqués sur la Plateforme.
           </p>
       </section>
     </LegalLayout>

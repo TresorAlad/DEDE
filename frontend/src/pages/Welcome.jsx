@@ -30,7 +30,7 @@ const STEPS = [
     icon: "key",
     title: "Prouvez la propriété",
     caption: "Confirmez que le domaine est à vous.",
-    detail: "ƉEƉE génère un jeton à déposer dans un fichier public à la racine de votre domaine. Aucun scan sans cette preuve.",
+    detail: "ƉeƉeFIA génère un jeton à déposer dans un fichier public à la racine de votre domaine. Aucun scan sans cette preuve.",
     to: "/launch",
     cta: "Vérifier la propriété",
   },
