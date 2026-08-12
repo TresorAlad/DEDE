@@ -45,20 +45,20 @@ export default function Sidebar() {
   }
 
   return (
-    <nav className="fixed left-0 top-0 z-50 flex h-screen w-64 flex-col border-r border-outline-variant/30 bg-surface-container-low px-sm py-md">
-      <div className="mb-xl flex justify-center px-sm">
+    <nav className="fixed left-0 top-0 z-50 flex h-screen w-64 flex-col border-r border-outline-variant/30 bg-surface-container-low px-sm py-sm">
+      <div className="mb-md flex shrink-0 justify-center px-sm">
         <Link to="/launch" className="block" aria-label="ƉeƉeFIA - Accueil">
           <img
             src="/logo.png"
             alt="ƉeƉeFIA"
             width={500}
             height={145}
-            className="mx-auto h-24 w-auto max-w-[220px] object-contain object-center"
+            className="mx-auto h-20 w-auto max-w-[200px] object-contain object-center"
           />
         </Link>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col gap-xs overflow-y-auto">
+      <div className="flex min-h-0 flex-1 flex-col gap-0.5 overflow-hidden">
         {links.map((link) => {
           const active = isActive(link.to);
           return (
@@ -67,8 +67,8 @@ export default function Sidebar() {
               to={link.to}
               className={
                 active
-                  ? "flex items-center gap-sm rounded border-r-2 border-primary bg-primary/5 px-sm py-sm font-bold text-primary transition-all duration-200 ease-in-out"
-                  : "flex items-center gap-sm rounded px-sm py-sm font-medium text-on-surface-variant transition-colors duration-200 ease-in-out hover:bg-surface-variant/50 hover:text-primary"
+                  ? "flex items-center gap-sm rounded border-r-2 border-primary bg-primary/5 px-sm py-base font-bold text-primary transition-all duration-200 ease-in-out"
+                  : "flex items-center gap-sm rounded px-sm py-base font-medium text-on-surface-variant transition-colors duration-200 ease-in-out hover:bg-surface-variant/50 hover:text-primary"
               }
             >
               <Icon name={link.icon} />
@@ -78,20 +78,20 @@ export default function Sidebar() {
         })}
       </div>
 
-      <div className="mb-md">
+      <div className="mb-sm shrink-0">
         <Link
           to="/launch"
-          className="flex w-full items-center justify-center gap-sm rounded border border-primary px-md py-sm font-label-caps text-label-caps uppercase text-primary transition-colors duration-200 hover:bg-primary hover:text-on-primary"
+          className="flex w-full items-center justify-center gap-sm rounded border border-primary px-sm py-base font-label-caps text-label-caps uppercase text-primary transition-colors duration-200 hover:bg-primary hover:text-on-primary"
         >
           <Icon name="play_arrow" size={18} />
           Nouvel audit
         </Link>
       </div>
 
-      <div className="flex flex-col gap-xs border-t border-outline-variant/30 pt-md">
+      <div className="flex shrink-0 flex-col gap-0.5 border-t border-outline-variant/30 pt-sm">
         <Link
           to="/profile"
-          className="flex items-center gap-sm rounded px-sm py-sm text-on-surface-variant transition-colors duration-200 hover:bg-surface-variant/50 hover:text-primary"
+          className="flex items-center gap-sm rounded px-sm py-base text-on-surface-variant transition-colors duration-200 hover:bg-surface-variant/50 hover:text-primary"
         >
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-outline-variant/30 bg-primary-container/10 font-label-caps text-label-caps text-primary-container">
             {initials}
@@ -108,7 +108,7 @@ export default function Sidebar() {
         <button
           type="button"
           onClick={() => setLogoutOpen(true)}
-          className="flex items-center gap-sm rounded px-sm py-sm text-left font-medium text-on-surface-variant transition-colors duration-200 hover:bg-surface-variant/50 hover:text-critical"
+          className="flex items-center gap-sm rounded px-sm py-base text-left font-medium text-on-surface-variant transition-colors duration-200 hover:bg-surface-variant/50 hover:text-critical"
         >
           <Icon name="logout" />
           <span>Déconnexion</span>
