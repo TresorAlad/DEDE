@@ -14,10 +14,11 @@ from fastapi.concurrency import run_in_threadpool
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth import get_current_user_id
+from app.auth import get_current_user, get_current_user_id
 from app.config import get_settings
 from app.db import get_db, get_db_ro
-from app.models import Audit, Platform, ScanResult, Score
+from app.models import Audit, Platform, ScanResult, Score, User
+from app.privileges import user_can_bypass_ownership
 from app.schemas import PlatformCreate, PlatformOut, PlatformUpdate
 from scanners.ssrf_guard import (
     UnresolvableTargetError,
@@ -199,15 +200,22 @@ async def delete_platform(
 async def verify_platform(
     platform_id: int,
     db: AsyncSession = Depends(get_db),
-    user_id: int = Depends(get_current_user_id),
+    user: User = Depends(get_current_user),
 ):
-    platform = await _get_owned_platform(db, platform_id, user_id)
+    platform = await _get_owned_platform(db, platform_id, user.id)
 
     if platform.verification_status == "verified":
         return platform
 
-    if settings.allow_dev_auto_verify:
-        # Bascule de démo locale uniquement (voir ALLOW_DEV_AUTO_VERIFY).
+    # Membres de l'équipe ƉEƉE uniquement (TEAM_OWNERSHIP_BYPASS_EMAILS).
+    if user_can_bypass_ownership(user):
+        platform.verification_status = "verified"
+        await db.commit()
+        await db.refresh(platform)
+        return platform
+
+    # Auto-verify : uniquement en environment=development.
+    if settings.auto_verify_enabled:
         platform.verification_status = "verified"
         await db.commit()
         await db.refresh(platform)

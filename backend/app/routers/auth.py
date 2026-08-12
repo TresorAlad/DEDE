@@ -13,6 +13,7 @@ from app.auth import (
 )
 from app.db import get_db, get_db_ro
 from app.models import User
+from app.privileges import user_can_bypass_ownership
 from app.schemas import (
     LoginRequest,
     PasswordChange,
@@ -21,6 +22,16 @@ from app.schemas import (
     UserOut,
     UserUpdate,
 )
+
+
+def _user_out(user: User) -> UserOut:
+    return UserOut(
+        id=user.id,
+        organization_name=user.organization_name,
+        full_name=user.full_name,
+        email=user.email,
+        can_bypass_ownership_verification=user_can_bypass_ownership(user),
+    )
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -34,7 +45,7 @@ async def me(
     user = result.scalar_one_or_none()
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Utilisateur introuvable")
-    return user
+    return _user_out(user)
 
 
 @router.patch("/me", response_model=UserOut)
@@ -47,7 +58,7 @@ async def update_me(
     user.organization_name = payload.organization_name.strip()
     await db.commit()
     await db.refresh(user)
-    return user
+    return _user_out(user)
 
 
 @router.post("/change-password", status_code=status.HTTP_204_NO_CONTENT)

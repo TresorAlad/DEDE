@@ -3,9 +3,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from app.auth import get_current_user_id
+from app.auth import get_current_user, get_current_user_id
 from app.db import get_db, get_db_ro
-from app.models import Audit, Platform
+from app.models import Audit, Platform, User
+from app.privileges import user_can_bypass_ownership
 from app.progress import initial_progress
 from app.queue import enqueue_audit
 from app.schemas import AuditOut
@@ -45,19 +46,24 @@ async def list_audits(
 async def start_audit(
     platform_id: int,
     db: AsyncSession = Depends(get_db),
-    user_id: int = Depends(get_current_user_id),
+    user: User = Depends(get_current_user),
 ):
     result = await db.execute(
-        select(Platform).where(Platform.id == platform_id, Platform.owner_id == user_id)
+        select(Platform).where(Platform.id == platform_id, Platform.owner_id == user.id)
     )
     platform = result.scalar_one_or_none()
     if platform is None:
         raise HTTPException(status_code=404, detail="Plateforme introuvable")
     if platform.verification_status != "verified":
-        raise HTTPException(
-            status_code=400,
-            detail="Vérification de propriété requise avant de lancer un audit",
-        )
+        if user_can_bypass_ownership(user):
+            platform.verification_status = "verified"
+            await db.commit()
+            await db.refresh(platform)
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail="Vérification de propriété requise avant de lancer un audit",
+            )
 
     existing = await db.execute(
         select(Audit).where(

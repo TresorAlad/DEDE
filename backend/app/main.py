@@ -45,6 +45,18 @@ async def lifespan(_: FastAPI):
         # Permet de démarrer l'API en local même si Neon n'est pas encore configuré.
         print(f"[DEDE] Avertissement DB au démarrage: {exc}")
 
+    boot_settings = get_settings()
+    if boot_settings.allow_dev_auto_verify and not boot_settings.is_development:
+        print(
+            "[DEDE] ALERTE: ALLOW_DEV_AUTO_VERIFY est ignoré hors development "
+            f"(environment={boot_settings.environment!r})."
+        )
+    if boot_settings.team_bypass_email_set:
+        print(
+            "[DEDE] Bypass propriété limité à "
+            f"{len(boot_settings.team_bypass_email_set)} email(s) d'équipe."
+        )
+
     keepalive_task = None
     if os.getenv("DB_KEEPALIVE", "true").lower() in ("1", "true", "yes"):
         keepalive_task = asyncio.create_task(_db_keepalive())

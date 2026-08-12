@@ -34,6 +34,8 @@ class UserOut(BaseModel):
     organization_name: str
     full_name: str
     email: EmailStr
+    # True uniquement pour les emails de TEAM_OWNERSHIP_BYPASS_EMAILS.
+    can_bypass_ownership_verification: bool = False
 
     model_config = {"from_attributes": True}
 
