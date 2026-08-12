@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import AppShell from "../components/AppShell";
-import CategoryBreakdown from "../components/CategoryBreakdown";
 import Icon from "../components/Icon";
 import PageHeader from "../components/PageHeader";
 import ScoreGauge from "../components/ScoreGauge";
@@ -24,6 +23,63 @@ function formatDateTime(value) {
   } catch {
     return "-";
   }
+}
+
+
+function ScoreSummaryPanel({ averageScore, scoredCount, latestScore, latestRisk, isAgent }) {
+  const avgTone = scoredCount ? scoreTone(averageScore) : null;
+  const latestTone = latestScore != null ? scoreTone(latestScore) : null;
+
+  return (
+    <div className="panel h-full">
+      <div className="panel-veil" />
+      <div className="relative z-10 flex h-full flex-col p-md">
+        <div className="mb-md flex items-center justify-between border-b border-outline-variant/30 pb-xs">
+          <h2 className="panel-title">Scores de sécurité</h2>
+          <Icon name="speed" className="text-on-surface-variant" />
+        </div>
+
+        <div className="grid flex-1 grid-cols-2 gap-md">
+          <div className="rounded border border-outline-variant/30 bg-surface-container-low p-md">
+            <p className="font-label-caps text-label-caps uppercase text-on-surface-variant">
+              Moyenne tous audits
+            </p>
+            <p
+              className="mt-sm font-display-lg tracking-tighter text-primary"
+              style={{ fontSize: "32px", lineHeight: "40px", color: avgTone?.color }}
+            >
+              {scoredCount ? `${Math.round(averageScore)}/100` : "-"}
+            </p>
+            <p className="mt-xs font-data-mono text-[12px] text-on-surface-variant">
+              {scoredCount ? `${scoredCount} audit(s) noté(s)` : "Aucun score disponible"}
+            </p>
+          </div>
+
+          <div className="rounded border border-outline-variant/30 bg-surface-container-low p-md">
+            <p className="font-label-caps text-label-caps uppercase text-on-surface-variant">
+              Dernier audit
+            </p>
+            <p
+              className="mt-sm font-display-lg tracking-tighter text-primary"
+              style={{ fontSize: "32px", lineHeight: "40px", color: latestTone?.color }}
+            >
+              {latestScore != null ? `${Math.round(latestScore)}/100` : "-"}
+            </p>
+            <p className="mt-xs font-data-mono text-[12px] text-on-surface-variant">
+              {latestRisk ? `Risque ${latestRisk}` : "En attente de résultat"}
+            </p>
+          </div>
+        </div>
+
+        {isAgent && (
+          <p className="mt-md flex items-center gap-base font-data-mono text-[12px] text-on-surface-variant">
+            <Icon name="info" size={16} />
+            Audit agents IA : pas de répartition par les 5 axes scanners.
+          </p>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export default function Dashboard() {
@@ -167,11 +223,15 @@ export default function Dashboard() {
               icon="verified_user"
               tone={verifiedCount === platforms.length && platforms.length ? "success" : "warning"}
             />
-            {latestReport?.engine !== "agents" && (
-              <div className="col-span-2">
-                <CategoryBreakdown categories={latestReport?.categories || {}} />
-              </div>
-            )}
+            <div className="col-span-2">
+              <ScoreSummaryPanel
+                averageScore={averageScore}
+                scoredCount={scoredAudits.length}
+                latestScore={latestReport?.score ?? null}
+                latestRisk={latestReport?.risk_level}
+                isAgent={latestReport?.engine === "agents"}
+              />
+            </div>
           </div>
 
           <div className="col-span-12 mt-md">

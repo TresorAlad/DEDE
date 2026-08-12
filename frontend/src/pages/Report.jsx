@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import AppShell from "../components/AppShell";
 import AgentActivity from "../components/AgentActivity";
 import AgentGraph from "../components/AgentGraph";
 import AuditProgress from "../components/AuditProgress";
-import CategoryBreakdown from "../components/CategoryBreakdown";
 import ConfirmDialog from "../components/ConfirmDialog";
 import Icon from "../components/Icon";
 import PageHeader from "../components/PageHeader";
@@ -102,6 +101,7 @@ function Section({ title, subtitle, icon, children }) {
 
 export default function Report() {
   const { auditId } = useParams();
+  const navigate = useNavigate();
   const [report, setReport] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -109,6 +109,8 @@ export default function Report() {
   const [reanalyzing, setReanalyzing] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   async function handleCancelAudit() {
     setCancelling(true);
@@ -122,6 +124,20 @@ export default function Report() {
       setError(err.message);
     } finally {
       setCancelling(false);
+    }
+  }
+
+  async function handleDeleteReport() {
+    setDeleting(true);
+    setError("");
+    try {
+      await api(`/audits/${auditId}`, { method: "DELETE" });
+      setDeleteOpen(false);
+      navigate("/reports");
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setDeleting(false);
     }
   }
 
@@ -248,12 +264,34 @@ export default function Report() {
               <Icon name="download" size={16} />
               {downloading ? "Génération..." : "PDF"}
             </button>
+            <button
+              type="button"
+              onClick={() => setDeleteOpen(true)}
+              disabled={deleting}
+              className="btn-danger"
+            >
+              <Icon name="delete" size={16} />
+              {deleting ? "Suppression..." : "Supprimer"}
+            </button>
             <Link to={`/reports/${auditId}/chat`} className="btn-primary">
               <Icon name="forum" size={16} />
               Assistant IA
             </Link>
           </div>
         }
+      />
+
+      <ConfirmDialog
+        open={deleteOpen}
+        tone="danger"
+        title="Supprimer ce rapport ?"
+        description="Le rapport, son score et toutes les données associées seront définitivement effacés. Cette action est irréversible."
+        confirmLabel="Supprimer définitivement"
+        cancelLabel="Conserver le rapport"
+        loading={deleting}
+        loadingLabel="Suppression..."
+        onConfirm={handleDeleteReport}
+        onCancel={() => !deleting && setDeleteOpen(false)}
       />
 
       <ConfirmDialog
@@ -347,11 +385,6 @@ export default function Report() {
                   title="Score de l'audit"
                 />
               </div>
-              {report.engine !== "agents" && (
-                <div className="col-span-12 lg:col-span-8">
-                  <CategoryBreakdown categories={report.categories || {}} />
-                </div>
-              )}
 
               {(report.surface_hosts || []).length > 0 && (
                 <Section

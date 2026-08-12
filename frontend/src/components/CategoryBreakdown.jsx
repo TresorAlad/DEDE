@@ -115,6 +115,9 @@ export default function CategoryBreakdown({
 
   const entries = Object.entries({ ...DEFAULT_CATEGORIES, ...categories });
   const evaluated = entries.filter(([, score]) => score !== null && score !== undefined);
+  const categoryAverage = evaluated.length
+    ? evaluated.reduce((sum, [, score]) => sum + Number(score), 0) / evaluated.length
+    : null;
 
   return (
     <div className="panel h-full">
@@ -124,6 +127,7 @@ export default function CategoryBreakdown({
           <h2 className="panel-title">{title || "Répartition par catégorie"}</h2>
           <span className="font-data-mono text-[12px] text-on-surface-variant">
             {evaluated.length}/{entries.length} analysées
+            {categoryAverage != null ? ` · moy. ${Math.round(categoryAverage)}%` : ""}
           </span>
         </div>
 
