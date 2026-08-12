@@ -99,6 +99,10 @@ function Section({ title, subtitle, icon, children }) {
   );
 }
 
+function auditPdfFilename(auditId) {
+  return `ƉeƉeFIA-rapport-AUD-${String(auditId).padStart(4, "0")}.pdf`;
+}
+
 export default function Report() {
   const { auditId } = useParams();
   const navigate = useNavigate();
@@ -158,7 +162,7 @@ export default function Report() {
     setDownloading(true);
     setError("");
     try {
-      await downloadFile(`/reports/${auditId}/pdf`, `dedefia-rapport-audit-${auditId}.pdf`);
+      await downloadFile(`/reports/${auditId}/pdf`, auditPdfFilename(auditId));
     } catch (err) {
       setError(err.message);
     } finally {

@@ -1,4 +1,5 @@
 import secrets
+from urllib.parse import quote
 
 from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.concurrency import run_in_threadpool
@@ -17,6 +18,16 @@ from app.services.redaction import redact
 from ai.report_analyzer import coerce_analysis_result
 
 router = APIRouter(prefix="/reports", tags=["reports"])
+
+
+def _audit_pdf_filename(audit_id: int) -> str:
+    return f"\u0189e\u0189eFIA-rapport-AUD-{audit_id:04d}.pdf"
+
+
+def _audit_pdf_content_disposition(audit_id: int) -> str:
+    utf_name = _audit_pdf_filename(audit_id)
+    ascii_name = f"DedeFIA-rapport-AUD-{audit_id:04d}.pdf"
+    return f"attachment; filename=\"{ascii_name}\"; filename*=UTF-8''{quote(utf_name)}"
 
 
 async def _load_audit(audit_id: int, db: AsyncSession, user_id: int) -> Audit:
@@ -254,7 +265,7 @@ async def get_report_pdf(
         content=pdf_bytes,
         media_type="application/pdf",
         headers={
-            "Content-Disposition": f'attachment; filename="dedefia-rapport-audit-{audit_id}.pdf"'
+            "Content-Disposition": _audit_pdf_content_disposition(audit_id),
         },
     )
 
