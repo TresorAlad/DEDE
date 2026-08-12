@@ -134,7 +134,7 @@ export default function Launch() {
 
   // Plateforme active du parcours.
   const [platform, setPlatform] = useState(null);
-  const [engine, setEngine] = useState("agents");
+  const [engine, setEngine] = useState("scanners");
   const [auditId, setAuditId] = useState(null);
   const [report, setReport] = useState(null);
   const [launching, setLaunching] = useState(false);
@@ -729,20 +729,19 @@ export default function Launch() {
                   title="Score de l'audit"
                 />
               </div>
-              <div className="col-span-12 lg:col-span-8">
-                <div className="panel h-full">
-                  <div className="panel-veil" />
-                  <div className="relative z-10 p-md">
-                    <h2 className="mb-md border-b border-outline-variant/30 pb-xs panel-title">
-                      Répartition par catégorie
-                    </h2>
-                    <CategoryBreakdown
-                      categories={report?.categories || {}}
-                      engine={report?.engine}
-                    />
+              {engine !== "agents" && (
+                <div className="col-span-12 lg:col-span-8">
+                  <div className="panel h-full">
+                    <div className="panel-veil" />
+                    <div className="relative z-10 p-md">
+                      <h2 className="mb-md border-b border-outline-variant/30 pb-xs panel-title">
+                        Répartition par catégorie
+                      </h2>
+                      <CategoryBreakdown categories={report?.categories || {}} />
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
               <div className="col-span-12">
                 <div className="panel">
                   <div className="panel-veil" />

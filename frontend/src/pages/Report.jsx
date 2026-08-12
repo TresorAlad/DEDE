@@ -347,12 +347,11 @@ export default function Report() {
                   title="Score de l'audit"
                 />
               </div>
-              <div className="col-span-12 lg:col-span-8">
-                <CategoryBreakdown
-                  categories={report.categories || {}}
-                  engine={report.engine}
-                />
-              </div>
+              {report.engine !== "agents" && (
+                <div className="col-span-12 lg:col-span-8">
+                  <CategoryBreakdown categories={report.categories || {}} />
+                </div>
+              )}
 
               {(report.surface_hosts || []).length > 0 && (
                 <Section

@@ -167,12 +167,11 @@ export default function Dashboard() {
               icon="verified_user"
               tone={verifiedCount === platforms.length && platforms.length ? "success" : "warning"}
             />
-            <div className="col-span-2">
-              <CategoryBreakdown
-                categories={latestReport?.categories || {}}
-                engine={latestReport?.engine}
-              />
-            </div>
+            {latestReport?.engine !== "agents" && (
+              <div className="col-span-2">
+                <CategoryBreakdown categories={latestReport?.categories || {}} />
+              </div>
+            )}
           </div>
 
           <div className="col-span-12 mt-md">
