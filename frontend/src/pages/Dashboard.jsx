@@ -168,7 +168,10 @@ export default function Dashboard() {
               tone={verifiedCount === platforms.length && platforms.length ? "success" : "warning"}
             />
             <div className="col-span-2">
-              <CategoryBreakdown categories={latestReport?.categories || {}} />
+              <CategoryBreakdown
+                categories={latestReport?.categories || {}}
+                engine={latestReport?.engine}
+              />
             </div>
           </div>
 

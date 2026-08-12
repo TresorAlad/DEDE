@@ -736,7 +736,10 @@ export default function Launch() {
                     <h2 className="mb-md border-b border-outline-variant/30 pb-xs panel-title">
                       Répartition par catégorie
                     </h2>
-                    <CategoryBreakdown categories={report?.categories || {}} />
+                    <CategoryBreakdown
+                      categories={report?.categories || {}}
+                      engine={report?.engine}
+                    />
                   </div>
                 </div>
               </div>

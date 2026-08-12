@@ -348,7 +348,10 @@ export default function Report() {
                 />
               </div>
               <div className="col-span-12 lg:col-span-8">
-                <CategoryBreakdown categories={report.categories || {}} />
+                <CategoryBreakdown
+                  categories={report.categories || {}}
+                  engine={report.engine}
+                />
               </div>
 
               {(report.surface_hosts || []).length > 0 && (
