@@ -46,14 +46,14 @@ export default function Sidebar() {
 
   return (
     <nav className="fixed left-0 top-0 z-50 flex h-screen w-64 flex-col border-r border-outline-variant/30 bg-surface-container-low px-sm py-md">
-      <div className="mb-xl px-sm">
+      <div className="mb-xl flex justify-center px-sm">
         <Link to="/launch" className="block" aria-label="ƉeƉeFIA - Accueil">
           <img
             src="/logo.png"
             alt="ƉeƉeFIA"
             width={500}
             height={145}
-            className="h-12 w-auto max-w-full object-contain object-left"
+            className="mx-auto h-24 w-auto max-w-[220px] object-contain object-center"
           />
         </Link>
       </div>
