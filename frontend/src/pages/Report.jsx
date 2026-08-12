@@ -14,6 +14,24 @@ import StatusBadge from "../components/StatusBadge";
 import { CardSkeleton } from "../components/Skeleton";
 import { api, downloadFile } from "../api/client";
 
+function formatSummary(value) {
+  if (!value) return "";
+  const text = String(value).trim();
+  if (!text.startsWith("{")) return text;
+  try {
+    const parsed = JSON.parse(text);
+    if (typeof parsed.summary === "string") return parsed.summary;
+  } catch {
+    const match = text.match(/"summary"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+    if (match) return match[1].replace(/\\"/g, '"').replace(/\\n/g, "\n");
+  }
+  return text;
+}
+
+function engineLabel(engine) {
+  return engine === "agents" ? "Agents IA" : "Scanners";
+}
+
 function stepText(step) {
   const raw = typeof step === "string" ? step : step?.etape || step?.title || JSON.stringify(step);
   // L'IA renvoie parfois "1. Faire X" alors que la liste HTML numérote déjà.
@@ -183,16 +201,22 @@ export default function Report() {
       </div>
 
       <PageHeader
-        title={`Audit AUD-${String(auditId).padStart(4, "0")}`}
+        title={`AUD-${String(auditId).padStart(4, "0")}`}
         subtitle={
           report
-            ? `Analyse de sécurité${report.risk_level ? ` - risque ${report.risk_level}` : ""} · ${
-                report.engine === "agents" ? "agents IA" : "scanners classiques"
+            ? `${report.target || "Cible"} · ${engineLabel(report.engine)}${
+                report.risk_level ? ` · risque ${report.risk_level}` : ""
               }`
             : "Chargement du rapport..."
         }
         actions={
           <div className="flex flex-wrap items-center gap-sm">
+            {report?.engine === "agents" && (
+              <span className="chip border-primary-container/30 bg-primary-container/10 text-primary-container">
+                <Icon name="neurology" size={16} />
+                Audit par agents IA
+              </span>
+            )}
             {report && <StatusBadge value={report.status} />}
             {cancellable && (
               <button
@@ -348,7 +372,7 @@ export default function Report() {
 
               <Section title="Synthèse" icon="description">
                 <p className="whitespace-pre-wrap leading-relaxed text-on-surface-variant">
-                  {report.summary || "Synthèse non encore générée."}
+                  {formatSummary(report.summary) || "Synthèse non encore générée."}
                 </p>
               </Section>
 
