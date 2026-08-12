@@ -2,6 +2,7 @@
  * Cadre des ecrans d'authentification : grille ambiante, halos et panneau vitre.
  */
 import Reveal from "./Reveal";
+import BrandLogo from "./BrandLogo";
 import ThemeToggle from "./ThemeToggle";
 
 export default function AuthLayout({ subtitle, children, footer }) {
@@ -19,13 +20,7 @@ export default function AuthLayout({ subtitle, children, footer }) {
 
       <Reveal as="main" delay={80} className="relative z-10 w-full max-w-md py-lg">
         <div className="mb-lg text-center" data-reveal>
-          <img
-            src="/logo.png"
-            alt="ƉeƉeFIA"
-            width={500}
-            height={145}
-            className="mx-auto mb-sm h-16 w-auto max-w-[280px] object-contain"
-          />
+          <BrandLogo className="mx-auto mb-sm h-16 w-auto max-w-[280px] object-contain" />
           <p className="font-data-mono text-data-mono text-on-surface-variant">{subtitle}</p>
         </div>
 

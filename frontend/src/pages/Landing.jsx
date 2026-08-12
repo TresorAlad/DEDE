@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import AgentTeamShowcase from "../components/AgentTeamShowcase";
 import AnimatedText from "../components/AnimatedText";
+import BrandLogo from "../components/BrandLogo";
 import Icon from "../components/Icon";
 import Reveal from "../components/Reveal";
 import ThemeToggle from "../components/ThemeToggle";
@@ -307,13 +308,7 @@ export default function Landing() {
         className="fixed inset-x-0 top-0 z-50 flex h-16 items-center justify-between border-b border-outline-variant/30 bg-surface/80 px-gutter backdrop-blur-md"
       >
         <Link to="/" className="flex items-center" data-reveal aria-label="ƉeƉeFIA - Accueil">
-          <img
-            src="/logo.png"
-            alt="ƉeƉeFIA"
-            width={500}
-            height={145}
-            className="h-9 w-auto object-contain"
-          />
+          <BrandLogo className="h-9 w-auto object-contain" />
         </Link>
 
         <nav className="hidden gap-md lg:flex" data-reveal>
@@ -662,13 +657,7 @@ export default function Landing() {
         <Reveal className="mx-auto grid max-w-7xl grid-cols-1 gap-lg md:grid-cols-4">
           <div data-reveal>
             <div className="mb-sm">
-              <img
-                src="/logo.png"
-                alt="ƉeƉeFIA"
-                width={500}
-                height={145}
-                className="h-10 w-auto object-contain object-left"
-              />
+              <BrandLogo className="h-10 w-auto object-contain object-left" />
             </div>
             <p className="text-[14px] leading-5 text-on-surface-variant">
               Audits de cybersécurité orchestrés par une équipe d'agents IA pour les

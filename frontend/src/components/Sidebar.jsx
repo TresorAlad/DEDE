@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import ConfirmDialog from "./ConfirmDialog";
+import BrandLogo from "./BrandLogo";
 import Icon from "./Icon";
 import { clearToken } from "../api/client";
 import { clearAuthUserCache, useAuthUser } from "../hooks/useAuthUser";
@@ -48,13 +49,7 @@ export default function Sidebar() {
     <nav className="fixed left-0 top-0 z-50 flex h-screen w-64 flex-col border-r border-outline-variant/30 bg-surface-container-low px-sm py-sm">
       <div className="mb-md flex shrink-0 justify-center px-sm">
         <Link to="/launch" className="block" aria-label="ƉeƉeFIA - Accueil">
-          <img
-            src="/logo.png"
-            alt="ƉeƉeFIA"
-            width={500}
-            height={145}
-            className="mx-auto h-20 w-auto max-w-[200px] object-contain object-center"
-          />
+          <BrandLogo className="mx-auto h-20 w-auto max-w-[200px] object-contain object-center" />
         </Link>
       </div>
 
