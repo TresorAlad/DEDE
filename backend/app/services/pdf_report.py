@@ -1,4 +1,4 @@
-"""Génération du rapport d'audit ƉEƉE au format PDF (téléchargeable depuis l'UI)."""
+"""Génération du rapport d'audit ƉeƉeFIA au format PDF (téléchargeable depuis l'UI)."""
 
 from __future__ import annotations
 
@@ -159,13 +159,13 @@ def build_report_pdf(context: dict[str, Any]) -> bytes:
         bottomMargin=2 * cm,
         leftMargin=2 * cm,
         rightMargin=2 * cm,
-        title=f"Rapport d'audit DEDE #{context.get('audit_id')}",
+        title=f"Rapport d'audit ƉeƉeFIA #{context.get('audit_id')}",
     )
 
     elements: list[Any] = []
     platform = context.get("platform") or {}
 
-    elements.append(Paragraph("\u0189E\u0189E \u2013 Rapport d'audit de s\u00e9curit\u00e9", styles["DedeTitle"]))  # ƉEƉE
+    elements.append(Paragraph("\u0189e\u0189eFIA \u2013 Rapport d'audit de s\u00e9curit\u00e9", styles["DedeTitle"]))
     subtitle = (
         f"{_escape(platform.get('name') or platform.get('domain') or '')} "
         f"({_escape(platform.get('domain') or '')})<br/>"

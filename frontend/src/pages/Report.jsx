@@ -158,7 +158,7 @@ export default function Report() {
     setDownloading(true);
     setError("");
     try {
-      await downloadFile(`/reports/${auditId}/pdf`, `dede-rapport-audit-${auditId}.pdf`);
+      await downloadFile(`/reports/${auditId}/pdf`, `dedefia-rapport-audit-${auditId}.pdf`);
     } catch (err) {
       setError(err.message);
     } finally {

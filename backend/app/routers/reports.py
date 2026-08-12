@@ -254,7 +254,7 @@ async def get_report_pdf(
         content=pdf_bytes,
         media_type="application/pdf",
         headers={
-            "Content-Disposition": f'attachment; filename="dede-rapport-audit-{audit_id}.pdf"'
+            "Content-Disposition": f'attachment; filename="dedefia-rapport-audit-{audit_id}.pdf"'
         },
     )
 
