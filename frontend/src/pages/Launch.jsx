@@ -335,7 +335,7 @@ export default function Launch() {
               >
                 <div>
                   <label className="field-label" htmlFor="launch-name">
-                    Nom (optionnel)
+                    Nom
                   </label>
                   <div className="relative">
                     <span className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-sm">
