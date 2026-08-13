@@ -4,9 +4,11 @@ Principes de notation (volontairement stricts) :
 
 1. Une catégorie qui n'a pas réellement pu être analysée n'est JAMAIS notée 100.
    Elle est marquée "non évaluée" (None) : on ne certifie pas ce qu'on n'a pas vérifié.
-2. Tant qu'un risque est confirmé, le score global est plafonné selon la sévérité
-   la plus grave rencontrée. Un site avec une faille critique ne peut pas afficher
-   un bon score, même si le reste est propre.
+2. Tant qu'un risque est confirmé, le score est plafonné selon la sévérité la plus
+   grave rencontrée. Le plafond s'applique d'abord à la catégorie qui porte la faille
+   (une faille haute en « Sécurité Web » fait chuter cette catégorie), puis au score
+   global. Ainsi la catégorie fautive explique visiblement le score global, au lieu
+   de rester proche de 100 pendant que le global s'effondre.
 3. Le score global est pondéré par le taux de couverture de l'audit : si seule une
    partie de la surface a pu être analysée, la note maximale atteignable baisse.
 4. Les seuils de risque sont exigeants : "Faible" demande un score très élevé.
@@ -130,6 +132,9 @@ def compute_score(scan_json: dict[str, Any]) -> dict[str, Any]:
     }
 
     worst_severity: str | None = None
+    # Pire sévérité rencontrée dans chaque catégorie, pour lui appliquer le
+    # même plafond que le score global.
+    category_worst: dict[str, str | None] = {category: None for category in CATEGORIES}
     counts = {level: 0 for level in SEVERITY_ORDER}
 
     for items in findings_by_tool.values():
@@ -147,6 +152,7 @@ def compute_score(scan_json: dict[str, Any]) -> dict[str, Any]:
             if scores[category] is None:
                 scores[category] = 100.0
             scores[category] = max(0.0, scores[category] - SEVERITY_PENALTY.get(severity, 0.0))
+            category_worst[category] = _worst_severity(category_worst[category], severity)
 
     # Une surface d'exposition large est un risque en soi.
     subdomains = sum(
@@ -157,6 +163,17 @@ def compute_score(scan_json: dict[str, Any]) -> dict[str, Any]:
             scores["Exposition réseau"] = max(0.0, scores["Exposition réseau"] - 15)
         elif subdomains > 10:
             scores["Exposition réseau"] = max(0.0, scores["Exposition réseau"] - 8)
+
+    # Plafond de sévérité appliqué à la catégorie porteuse de la faille : une
+    # catégorie où subsiste un risque grave ne peut pas afficher un bon score,
+    # exactement comme le global. La catégorie fautive rejoint ainsi le niveau du
+    # score global au lieu de le contredire.
+    for category, value in scores.items():
+        if value is None:
+            continue
+        worst = category_worst.get(category)
+        if worst:
+            scores[category] = min(value, SEVERITY_CAP.get(worst, 100.0))
 
     assessed = [value for value in scores.values() if value is not None]
     coverage = len(assessed) / len(CATEGORIES)
@@ -184,9 +201,7 @@ def compute_score(scan_json: dict[str, Any]) -> dict[str, Any]:
     global_score *= coverage
     global_score = round(max(0.0, min(100.0, global_score)), 1)
 
-    if coverage < 0.5:
-        risk = "Indéterminé"
-    elif global_score >= 90:
+    if global_score >= 90:
         risk = "Faible"
     elif global_score >= 75:
         risk = "Modéré"
@@ -205,6 +220,15 @@ def compute_score(scan_json: dict[str, Any]) -> dict[str, Any]:
         "coverage": round(coverage, 2),
         "findings_count": counts,
     }
+
+    if 0 < coverage < 0.5:
+        assessed_labels = [name for name, value in scores.items() if value is not None]
+        result["note"] = (
+            f"Audit partiel ({len(assessed)}/{len(CATEGORIES)} catégories évaluées : "
+            f"{', '.join(assessed_labels)}). "
+            "Les autres catégories restent non évaluées car les outils associés n'ont pas "
+            "pu joindre la cible ou ont échoué."
+        )
     if target_unreachable:
         result["note"] = (
             "La cible web n'a pas répondu (connexion HTTP(S) impossible) : "

@@ -110,7 +110,7 @@ def assert_public_url(url: str) -> None:
     assert_public_host(parsed.hostname or "")
 
 
-def safe_get(url: str, timeout: int = 10):
+def safe_get(url: str, timeout: int = 20, retries: int = 1):
     """GET protégé contre le SSRF : valide l'hôte de l'URL et de chaque redirection.
 
     Les redirections sont suivies manuellement (au lieu de allow_redirects=True)
@@ -118,16 +118,28 @@ def safe_get(url: str, timeout: int = 10):
     """
     import requests
 
-    current_url = url
-    with requests.Session() as session:
-        for _ in range(MAX_REDIRECTS):
-            assert_public_url(current_url)
-            response = session.get(current_url, timeout=timeout, allow_redirects=False)
-            if response.is_redirect or response.is_permanent_redirect:
-                location = response.headers.get("Location")
-                if not location:
+    last_exc: requests.RequestException | None = None
+    for attempt in range(retries + 1):
+        current_url = url
+        try:
+            with requests.Session() as session:
+                for _ in range(MAX_REDIRECTS):
+                    assert_public_url(current_url)
+                    response = session.get(current_url, timeout=timeout, allow_redirects=False)
+                    if response.is_redirect or response.is_permanent_redirect:
+                        location = response.headers.get("Location")
+                        if not location:
+                            return response
+                        current_url = urljoin(current_url, location)
+                        continue
                     return response
-                current_url = urljoin(current_url, location)
-                continue
-            return response
-    raise UnsafeTargetError("Trop de redirections.")
+            raise UnsafeTargetError("Trop de redirections.")
+        except UnsafeTargetError:
+            raise
+        except requests.RequestException as exc:
+            last_exc = exc
+            if attempt >= retries:
+                raise
+    if last_exc is not None:
+        raise last_exc
+    raise RuntimeError("safe_get: état inattendu")

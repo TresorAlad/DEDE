@@ -46,7 +46,7 @@ SECURITY_HEADERS = {
 def analyze_headers(url: str) -> list[dict[str, Any]]:
     findings: list[dict[str, Any]] = []
     try:
-        response = safe_get(url, timeout=10)
+        response = safe_get(url, timeout=20, retries=1)
     except UnsafeTargetError as exc:
         return [
             {
